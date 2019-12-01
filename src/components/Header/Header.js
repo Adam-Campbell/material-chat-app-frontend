@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import BackIcon from '@material-ui/icons/ArrowBack';
 import CreateIcon from '@material-ui/icons/Create';
+import { CurrentUserContext } from '../CurrentUserContext';
 
 const useStyles = makeStyles(theme => ({
     pushRightButton: {
@@ -22,12 +23,16 @@ const useStyles = makeStyles(theme => ({
 
 const ButtonLink = React.forwardRef((props, ref) => <Link innerRef={ref} {...props} />);
 
-const Header = ({ isLoggedIn }) => {
+const Header = () => {
+
     const { pushRightButton, backIcon } = useStyles();
+
+    const { isSignedIn, signOut } = useContext(CurrentUserContext);
+
     return (
         <AppBar>
             <ToolBar>
-                {isLoggedIn ? (
+                {isSignedIn ? (
                     <>
                         <Button color="inherit" component={ButtonLink} to="/conversations">
                             <BackIcon className={backIcon} fontSize="small" />
@@ -36,7 +41,7 @@ const Header = ({ isLoggedIn }) => {
                         <IconButton color="inherit" className={pushRightButton}>
                             <CreateIcon />
                         </IconButton>
-                        <Button color="inherit">Sign Out</Button>
+                        <Button color="inherit" onClick={signOut}>Sign Out</Button>
                     </>
                 ) : (
                     <>
@@ -48,9 +53,5 @@ const Header = ({ isLoggedIn }) => {
         </AppBar>
     );
 }
-
-Header.propTypes = {
-    isLoggedIn: PropTypes.bool.isRequired
-};
 
 export default Header;

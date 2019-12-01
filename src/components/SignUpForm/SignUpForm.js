@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Link from '@material-ui/core/Link';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, Redirect } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import AccountIcon from '@material-ui/icons/AccountCircle';
-
+import { CurrentUserContext } from '../CurrentUserContext';
 
 const useStyles = makeStyles(theme => ({
     styledForm: {
@@ -37,16 +37,25 @@ const SignUpForm = () => {
     const [ password, setPassword ] = useState('');
     const [ confirmPassword, setConfirmPassword ] = useState('');
 
-    const handleSubmit = e => {
+    const { isSignedIn, signUp } = useContext(CurrentUserContext);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(`
             username: ${username}
             password: ${password}
             confirmPassword: ${confirmPassword}
         `);
+        try {
+            await signUp(username, password);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    return (
+    return isSignedIn ? (
+        <Redirect to="/conversations" />
+    ) : (
         <form className={styledForm} onSubmit={handleSubmit}>
             <AccountIcon className={accountIcon} fontSize="large" color="secondary"/>
             <Typography component="h1" variant="h4" paragraph align="center">Sign Up</Typography>

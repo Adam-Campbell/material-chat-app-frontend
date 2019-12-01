@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { makeStyles } from '@material-ui/core/styles';
 import Header from '../Header';
@@ -9,30 +9,65 @@ import CenteredContainer from '../CenteredContainer';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import SignInForm from '../SignInForm';
 import SignUpForm from '../SignUpForm';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import LoadingSpinner from '../LoadingSpinner';
+import { CurrentUserContext } from '../CurrentUserContext';
 
 const useStyles = makeStyles(theme => ({
-    container: {
-        marginTop: 56,
-        //border: 'solid red 1px',
-        minHeight: 'calc(100vh - 56px)',
-        display: 'flex',
-        flexDirection: 'column',
-        [theme.breakpoints.up('sm')]: {
-            marginTop: 64,
-            minHeight: 'calc(100vh - 64px)'
-        }
-    }
+    
 }));
+
+async function startConversation() {
+    try {
+        const response = await fetch('http://localhost:5000/conversations', {
+            credentials: 'include',
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: '5de4037d5c3bc02550e9d969',
+                messageText: 'Hey there friend'
+            })
+        });
+        console.log(response);
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 
 const App = () => {
-    const { container } = useStyles();
-    return (
+
+    const classes = useStyles();
+
+    const { isSignedIn, hasCheckedForSession } = useContext(CurrentUserContext);
+
+    // useEffect(() => {
+    //     const checkForSession = async () => {
+    //         try {
+    //             const response = await getProfile();
+    //             console.log(response)
+    //             const { username, _id } = response;
+    //             storeUser(username, _id);
+    //         } catch (error) {
+    //             clearUser();
+    //             console.log(error);
+    //         }
+    //     }
+    //     checkForSession();
+    // }, []);
+
+
+    return !hasCheckedForSession ? (
+        <LoadingSpinner />
+    ) : (
         <>
             <CssBaseline />
             <BrowserRouter>
-                <Header isLoggedIn={true} />
+                <Header isLoggedIn={isSignedIn} />
                 <CenteredContainer>
+                    {/* <button onClick={startConversation}>Click me</button> */}
                     <Switch>
                         <Route path="/sign-up">
                             <SignUpForm />

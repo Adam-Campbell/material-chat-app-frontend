@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import { postMessage } from '../../Api';
 
 const useStyles = makeStyles(theme => ({
     styledForm: {
@@ -17,15 +19,22 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const AddMessageForm = () => {
+const AddMessageForm = ({ conversationId, updateConversation }) => {
 
     const { styledForm, messageInput } = useStyles();
 
     const [ message, setMessage ] = useState('');
 
-    const handleSubmit = e => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(message);
+        try {
+            const response = await postMessage(conversationId, message);
+            updateConversation(response.conversation);
+            setMessage('');
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return (
@@ -48,5 +57,10 @@ const AddMessageForm = () => {
         </form>
     );
 }
+
+AddMessageForm.propTypes = {
+    conversationId: PropTypes.string.isRequired,
+    updateConversation: PropTypes.func.isRequired
+};
 
 export default AddMessageForm;
