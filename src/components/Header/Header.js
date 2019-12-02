@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -11,6 +11,8 @@ import ButtonBase from '@material-ui/core/ButtonBase';
 import BackIcon from '@material-ui/icons/ArrowBack';
 import CreateIcon from '@material-ui/icons/Create';
 import { CurrentUserContext } from '../CurrentUserContext';
+import NewConversationModal from '../NewConversationModal';
+import { signOut } from '../../Api';
 
 const useStyles = makeStyles(theme => ({
     pushRightButton: {
@@ -27,7 +29,18 @@ const Header = () => {
 
     const { pushRightButton, backIcon } = useStyles();
 
-    const { isSignedIn, signOut } = useContext(CurrentUserContext);
+    const { isSignedIn, clearUser } = useContext(CurrentUserContext);
+
+    const [ isShowingModal, setIsShowingModal ] = useState(false);
+
+    const handleSignOut = async () => {
+        try {
+            await signOut();
+            clearUser();
+        } catch (error) {  
+            console.log(error);
+        }
+    }
 
     return (
         <AppBar>
@@ -38,10 +51,18 @@ const Header = () => {
                             <BackIcon className={backIcon} fontSize="small" />
                             All
                         </Button> 
-                        <IconButton color="inherit" className={pushRightButton}>
+                        <IconButton 
+                            color="inherit" 
+                            className={pushRightButton} 
+                            onClick={() => setIsShowingModal(prev => !prev)}
+                        >
                             <CreateIcon />
                         </IconButton>
-                        <Button color="inherit" onClick={signOut}>Sign Out</Button>
+                        <Button color="inherit" onClick={handleSignOut}>Sign Out</Button>
+                        <NewConversationModal 
+                            isShowingModal={isShowingModal}
+                            closeModal={() => setIsShowingModal(false)}
+                        />
                     </>
                 ) : (
                     <>

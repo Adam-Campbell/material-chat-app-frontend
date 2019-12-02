@@ -26,16 +26,15 @@ const ConversationContainer = () => {
 
     useEffect(() => {
         if (!isSignedIn) return;
-        const storeConversation = async () => {
+        (async () => {
             try {
                 const response = await getConversation(id);
-                updateConversation(response.conversation)
+                updateConversation(response.data.conversation);
             } catch (error) {
                 console.log(error);
             }
-        }
-        storeConversation();
-    }, [ isSignedIn, currentUserId, id ]);
+        })();
+    }, [ isSignedIn, id ]);
 
 
     if (!isSignedIn) {

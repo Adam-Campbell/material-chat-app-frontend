@@ -42,18 +42,17 @@ const ConversationsList = (props) => {
 
     useEffect(() => {
         if (!isSignedIn) return;
-
-        const getConversations = async () => {
+        (async () => {
             try {
                 const response = await getUsersConversations();
-                const formattedConversations = formatConversations(response.conversations, currentUserId);
+                const { conversations } = response.data;
+                const formattedConversations = formatConversations(conversations, currentUserId);
                 setConversations(formattedConversations);
             } catch (error) {
                 console.log(error);
             }
-        }
-        getConversations();
-    }, [ isSignedIn, currentUserId ])
+        })();
+    }, [ isSignedIn, currentUserId ]);
 
     return !isSignedIn ? (
         <Redirect to="/sign-in" />

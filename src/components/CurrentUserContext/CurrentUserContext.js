@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useCallback } from 'react';
-import { getProfile, signUserIn, signUserOut, signUserUp } from '../../Api';
+import { checkForSession } from '../../Api';
 
 export const CurrentUserContext = React.createContext();
 
@@ -50,70 +50,26 @@ export const CurrentUserContextProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        const checkForSession = async () => {
+        (async () => {
             try {
-                const response = await getProfile();
-                const { username, _id } = response;
-                storeUser(username, _id);
-                // dispatch({
-                //     type: 'STORE_USER',
-                //     payload: {
-                //         currentUserName: username,
-                //         currentUserId: _id
-                //     }
-                // });
+                const response = await checkForSession();
+                const { hasSession, user } = response.data;
+                if (hasSession) {
+                    storeUser(user.username, user._id);
+                } else {
+                    clearUser();
+                }
             } catch (error) {
-                clearUser();
-                //dispatch({ type: 'CLEAR_USER' });
                 console.log(error);
             }
-        };
-        checkForSession();
-    }, []);
-
-    const signIn = useCallback(async (username, password) => {
-        try {
-            const response = await signUserIn(username, password);
-            //const { username, _id } = response.user;
-            storeUser(response.user.username, response.user._id);
-            // dispatch({
-            //     type: 'STORE_USER',
-            //     payload: {
-            //         currentUserName: response.user.username,
-            //         currentUserId: response.user._id
-            //     }
-            // });
-        } catch (error) {
-            console.log(error);
-        }
-    }, []);
-
-    const signOut = useCallback(async () => {
-        try {
-            const response = await signUserOut();
-            //dispatch({ type: 'CLEAR_USER' });
-            clearUser();
-        } catch (error) {
-            console.log(error);
-        }
-    }, []);
-
-    const signUp = useCallback(async (username, password) => {
-        try {
-            const response = await signUserUp(username, password);
-            //const { username, _id } = response.user;
-            storeUser(response.user.username, response.user._id);
-        } catch (error) {
-            console.log(error);
-        }
+        })();
     }, []);
 
     return (
         <CurrentUserContext.Provider value={{
             ...state,
-            signIn,
-            signOut,
-            signUp
+            storeUser,
+            clearUser
         }}>
             {children}
         </CurrentUserContext.Provider>

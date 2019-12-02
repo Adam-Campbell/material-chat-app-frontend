@@ -7,6 +7,7 @@ import { Link as RouterLink, Redirect } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import AccountIcon from '@material-ui/icons/AccountCircle';
 import { CurrentUserContext } from '../CurrentUserContext';
+import { signIn } from '../../Api';
 
 const useStyles = makeStyles(theme => ({
     styledForm: {
@@ -36,7 +37,9 @@ const SignInForm = () => {
     const [ username, setUsername ] = useState('');
     const [ password, setPassword ] = useState('');
 
-    const { isSignedIn, signIn } = useContext(CurrentUserContext);
+    const [ error, setError ] = useState(null);
+
+    const { isSignedIn, storeUser } = useContext(CurrentUserContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -44,10 +47,20 @@ const SignInForm = () => {
             username: ${username}
             password: ${password}
         `);
+        if (!username || !password) {
+            return setError('You must fill out all required fields');
+        }
         try {
-            await signIn(username, password);
-        } catch (error) {
-            console.log(error);
+            const response = await signIn(username, password);
+            const { user } = response.data;
+            storeUser(user.username, user._id);
+        } catch (err) {
+            console.log(err);
+            if (err.response) {
+                setError(err.response.data.error);
+            } else {
+                console.log('This error should be managed globally');
+            }
         }
 
     }
@@ -56,6 +69,7 @@ const SignInForm = () => {
         <Redirect to="/conversations" />
     ) : (
         <form className={styledForm} onSubmit={handleSubmit}>
+            {error && <p>{error}</p>}
             <AccountIcon className={accountIcon} fontSize="large" color="secondary"/>
             <Typography component="h1" variant="h4" paragraph align="center">Sign In</Typography>
             <TextField 

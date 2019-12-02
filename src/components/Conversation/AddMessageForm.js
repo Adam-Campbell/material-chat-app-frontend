@@ -30,7 +30,7 @@ const AddMessageForm = ({ conversationId, updateConversation }) => {
         console.log(message);
         try {
             const response = await postMessage(conversationId, message);
-            updateConversation(response.conversation);
+            updateConversation(response.data.conversation);
             setMessage('');
         } catch (error) {
             console.log(error);

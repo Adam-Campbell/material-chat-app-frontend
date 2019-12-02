@@ -7,6 +7,7 @@ import { Link as RouterLink, Redirect } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import AccountIcon from '@material-ui/icons/AccountCircle';
 import { CurrentUserContext } from '../CurrentUserContext';
+import { signUp } from '../../Api';
 
 const useStyles = makeStyles(theme => ({
     styledForm: {
@@ -37,7 +38,9 @@ const SignUpForm = () => {
     const [ password, setPassword ] = useState('');
     const [ confirmPassword, setConfirmPassword ] = useState('');
 
-    const { isSignedIn, signUp } = useContext(CurrentUserContext);
+    const [ error, setError ] = useState(null);
+
+    const { isSignedIn, storeUser } = useContext(CurrentUserContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -46,10 +49,22 @@ const SignUpForm = () => {
             password: ${password}
             confirmPassword: ${confirmPassword}
         `);
+        if (!username || !password || !confirmPassword) {
+            return setError('You must fill out all required fields');
+        } else if (password !== confirmPassword) {
+            return setError('Your password confirmation does not match');
+        }
         try {
-            await signUp(username, password);
+            const response = await signUp(username, password);
+            const { user } = response.data;
+            storeUser(user.username, user._id);
         } catch (error) {
             console.log(error);
+            if (error.response) {
+                setError(error.response.data.error);
+            } else {
+                console.log('This error should be handled globally');
+            }
         }
     }
 
@@ -57,6 +72,7 @@ const SignUpForm = () => {
         <Redirect to="/conversations" />
     ) : (
         <form className={styledForm} onSubmit={handleSubmit}>
+            {error && <p>{error}</p>}
             <AccountIcon className={accountIcon} fontSize="large" color="secondary"/>
             <Typography component="h1" variant="h4" paragraph align="center">Sign Up</Typography>
             <TextField 

@@ -5,105 +5,37 @@ const a = axios.create({
     withCredentials: true
 });
 
-export const getProfile = async () => {
-    try {
-        const response = await a.get('me');
-        return response.data.user;
-    } catch (error) {
-        //console.log(error);
-        throw new Error(error);
-    }
-}
-
-export const signUserIn = async (username, password) => {
-    try {
-        const response = await a.request('auth/sign-in', {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            method: 'POST',
-            data: {
-                username,
-                password
-            }
-        });
-        console.log(response);
-        return response.data;
-    } catch (error) {
-        console.log(error);
-        throw new Error(error);
-    }
-}
-
-export const signUserOut = async (username, password) => {
-    try {
-        const response = await a.get('auth/sign-out');
-        console.log(response);
-        return response.data;
-    } catch (error) {
-        console.log(error);
-        throw new Error(error);
-    }
-}
-
-export const signUserUp = async (username, password) => {
-    try {
-        const response = await a.request('auth/sign-up', {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            method: 'POST',
-            data: {
-                username,
-                password
-            }
-        });
-        console.log(response);
-        return response.data;
-    } catch (error) {
-        console.log(error);
-        throw new Error(error);
-    }
-}
+const post = (url, body) => a.request(url, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    data: body
+});
 
 
-export const getUsersConversations = async () => {
-    try {
-        const response = await a.get('me/conversations');
-        console.log(response.data);
-        return response.data;
-    } catch (error) {
-        console.log(error);
-        throw new Error(error);
-    }
-}
+export const getProfile = () => a.get('me');
 
-export const getConversation = async (conversationId) => {
-    try {
-        const response = await a.get(`conversations/${conversationId}`);
-        console.log(response.data);
-        return response.data;
-    } catch (error) {
-        console.log(error);
-        throw new Error(error);
-    }
-}
+export const checkForSession = () => a.get('auth/check-for-session');
 
-export const postMessage = async (conversationId, text) => {
-    try {
-        const response = await a.request(`conversations/${conversationId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: {
-                text
-            }
-        });
-        console.log(response.data);
-        return response.data;
-    } catch (error) {
-        console.log(error);
-        throw new Error(error);
-    }
-}
+export const signIn = (username, password) => {
+    return post('auth/sign-in', { username, password });
+};
+
+export const signOut = () => a.get('auth/sign-out');
+
+export const signUp = (username, password) => post('auth/sign-up', { username, password });
+
+export const getUsersConversations = () => a.get('me/conversations');
+
+export const getConversation = (conversationId) => a.get(`conversations/${conversationId}`);
+
+export const postMessage = (conversationId, text) => {
+    return post(`conversations/${conversationId}`, { text });
+};
+
+export const searchUsers = (query) => a.get('users/search', { params: { query } });
+
+export const postConversation = (userId, messageText) => {
+    return post('conversations', { userId, messageText });
+};

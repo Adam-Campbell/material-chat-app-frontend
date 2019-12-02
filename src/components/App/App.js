@@ -6,12 +6,13 @@ import Header from '../Header';
 import ConversationsList from '../ConversationsList';
 import Conversation from '../Conversation';
 import CenteredContainer from '../CenteredContainer';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import SignInForm from '../SignInForm';
 import SignUpForm from '../SignUpForm';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import LoadingSpinner from '../LoadingSpinner';
 import { CurrentUserContext } from '../CurrentUserContext';
+import { searchUsers } from '../../Api';
 
 const useStyles = makeStyles(theme => ({
     
@@ -67,7 +68,7 @@ const App = () => {
             <BrowserRouter>
                 <Header isLoggedIn={isSignedIn} />
                 <CenteredContainer>
-                    {/* <button onClick={startConversation}>Click me</button> */}
+                    {/* <button onClick={() => searchUsers('A')}>Click me</button> */}
                     <Switch>
                         <Route path="/sign-up">
                             <SignUpForm />
@@ -82,7 +83,7 @@ const App = () => {
                             <Conversation />
                         </Route>
                         <Route path="/">
-                            <div>Placeholder</div>
+                            <Redirect to={isSignedIn ? '/conversations' : '/sign-in'} />
                         </Route>
                     </Switch>
                 </CenteredContainer>
