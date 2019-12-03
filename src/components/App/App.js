@@ -13,6 +13,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import LoadingSpinner from '../LoadingSpinner';
 import { CurrentUserContext } from '../CurrentUserContext';
 import { searchUsers } from '../../Api';
+import io from 'socket.io-client';
 
 const useStyles = makeStyles(theme => ({
     
@@ -35,6 +36,14 @@ async function startConversation() {
     } catch (error) {
         console.log(error);
     }
+}
+
+function connectToSocketIO() {
+    const socket = io('http://localhost:5000');
+    socket.on('connect', () => {
+        console.log('The socket has connected');
+    });
+
 }
 
 
@@ -68,7 +77,7 @@ const App = () => {
             <BrowserRouter>
                 <Header isLoggedIn={isSignedIn} />
                 <CenteredContainer>
-                    {/* <button onClick={() => searchUsers('A')}>Click me</button> */}
+                    <button onClick={connectToSocketIO}>Click me</button>
                     <Switch>
                         <Route path="/sign-up">
                             <SignUpForm />

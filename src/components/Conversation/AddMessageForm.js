@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { postMessage } from '../../Api';
+import { SocketContext } from '../SocketContext';
 
 const useStyles = makeStyles(theme => ({
     styledForm: {
@@ -25,16 +26,25 @@ const AddMessageForm = ({ conversationId, updateConversation }) => {
 
     const [ message, setMessage ] = useState('');
 
-    const handleSubmit = async (e) => {
+    const { emit } = useContext(SocketContext);
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     console.log(message);
+    //     try {
+    //         const response = await postMessage(conversationId, message);
+    //         console.log(response.data.conversation);
+    //         updateConversation(response.data.conversation);
+    //         setMessage('');
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
+
+    const handleSubmit = e => {
         e.preventDefault();
-        console.log(message);
-        try {
-            const response = await postMessage(conversationId, message);
-            updateConversation(response.data.conversation);
-            setMessage('');
-        } catch (error) {
-            console.log(error);
-        }
+        emit('sendMessage', conversationId, message);
+        setMessage('');
     }
 
     return (

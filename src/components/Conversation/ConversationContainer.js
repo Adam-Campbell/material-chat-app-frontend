@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { CurrentUserContext } from '../CurrentUserContext';
+import { SocketContext } from '../SocketContext';
 import { getConversation } from '../../Api';
 import Conversation from './Conversation';
 import LoadingSpinner from '../LoadingSpinner';
@@ -12,6 +13,8 @@ const ConversationContainer = () => {
     const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
     const [ conversation, setConversation ] = useState(null);
     const [ isLoading, setIsLoading ] = useState(false);
+
+    const { emit, on } = useContext(SocketContext);
 
     const updateConversation = useCallback((conversation) => {
         const formattedConversation = {
@@ -25,16 +28,36 @@ const ConversationContainer = () => {
     }, [ currentUserId ]);
 
     useEffect(() => {
-        if (!isSignedIn) return;
-        (async () => {
-            try {
-                const response = await getConversation(id);
-                updateConversation(response.data.conversation);
-            } catch (error) {
-                console.log(error);
-            }
-        })();
+        if (isSignedIn) {
+            emit('getConversation', id);
+            const off = on('gotConversation', data => {
+                console.log(data);
+                const { conversation } = data;
+                updateConversation(conversation);
+            });
+            return off;
+        }
     }, [ isSignedIn, id ]);
+
+    useEffect(() => {
+        const off = on('sentMessage', data => {
+            const { conversation } = data;
+            updateConversation(conversation);
+        });
+        return off;
+    }, [ isSignedIn, id ]);
+
+    // useEffect(() => {
+    //     if (!isSignedIn) return;
+    //     (async () => {
+    //         try {
+    //             const response = await getConversation(id);
+    //             updateConversation(response.data.conversation);
+    //         } catch (error) {
+    //             console.log(error);
+    //         }
+    //     })();
+    // }, [ isSignedIn, id ]);
 
 
     if (!isSignedIn) {

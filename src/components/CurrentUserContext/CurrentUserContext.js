@@ -1,5 +1,6 @@
-import React, { useReducer, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback, useContext } from 'react';
 import { checkForSession } from '../../Api';
+import { SocketContext } from '../SocketContext';
 
 export const CurrentUserContext = React.createContext();
 
@@ -35,6 +36,8 @@ export const CurrentUserContextProvider = ({ children }) => {
 
     const [ state, dispatch ] = useReducer(reducer, initialState);
 
+    const { connect } = useContext(SocketContext);
+
     const storeUser = useCallback((currentUserName, currentUserId) => {
         dispatch({
             type: 'STORE_USER',
@@ -53,9 +56,12 @@ export const CurrentUserContextProvider = ({ children }) => {
         (async () => {
             try {
                 const response = await checkForSession();
-                const { hasSession, user } = response.data;
+                const { hasSession, user, socketToken } = response.data;
                 if (hasSession) {
-                    storeUser(user.username, user._id);
+                    console.log(socketToken);
+                    connect(socketToken, () => {
+                        storeUser(user.username, user._id);
+                    });
                 } else {
                     clearUser();
                 }

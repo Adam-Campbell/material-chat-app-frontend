@@ -7,6 +7,7 @@ import { Link as RouterLink, Redirect } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
 import AccountIcon from '@material-ui/icons/AccountCircle';
 import { CurrentUserContext } from '../CurrentUserContext';
+import { SocketContext } from '../SocketContext';
 import { signIn } from '../../Api';
 
 const useStyles = makeStyles(theme => ({
@@ -41,6 +42,8 @@ const SignInForm = () => {
 
     const { isSignedIn, storeUser } = useContext(CurrentUserContext);
 
+    const { connect } = useContext(SocketContext);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(`
@@ -52,8 +55,11 @@ const SignInForm = () => {
         }
         try {
             const response = await signIn(username, password);
-            const { user } = response.data;
-            storeUser(user.username, user._id);
+            const { user, socketToken } = response.data;
+            console.log(socketToken);
+            connect(socketToken, () => {
+                storeUser(user.username, user._id);
+            });
         } catch (err) {
             console.log(err);
             if (err.response) {

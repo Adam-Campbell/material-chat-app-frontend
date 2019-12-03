@@ -11,6 +11,7 @@ import ButtonBase from '@material-ui/core/ButtonBase';
 import BackIcon from '@material-ui/icons/ArrowBack';
 import CreateIcon from '@material-ui/icons/Create';
 import { CurrentUserContext } from '../CurrentUserContext';
+import { SocketContext } from '../SocketContext';
 import NewConversationModal from '../NewConversationModal';
 import { signOut } from '../../Api';
 
@@ -31,11 +32,14 @@ const Header = () => {
 
     const { isSignedIn, clearUser } = useContext(CurrentUserContext);
 
+    const { disconnect } = useContext(SocketContext);
+
     const [ isShowingModal, setIsShowingModal ] = useState(false);
 
     const handleSignOut = async () => {
         try {
             await signOut();
+            disconnect();
             clearUser();
         } catch (error) {  
             console.log(error);
