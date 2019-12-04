@@ -4,11 +4,14 @@ import './index.css';
 import App from './components/App';
 import * as serviceWorker from './serviceWorker';
 import { CurrentUserContextProvider } from './components/CurrentUserContext';
+import { SocketContextProvider } from './components/SocketContext';
 
 ReactDOM.render(
-    <CurrentUserContextProvider>
-        <App />
-    </CurrentUserContextProvider>, 
+    <SocketContextProvider>
+        <CurrentUserContextProvider>
+            <App />
+        </CurrentUserContextProvider>
+    </SocketContextProvider>, 
     document.getElementById('root')
 );
 

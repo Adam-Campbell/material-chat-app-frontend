@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
@@ -10,6 +10,8 @@ import TextField from '@material-ui/core/TextField';
 import UserSearch from './UserSearch';
 import { postConversation } from '../../Api';
 import { useHistory } from 'react-router-dom';
+import { SocketContext } from '../SocketContext';
+import socketActions from '../../socketActions';
 
 const useStyles = makeStyles(theme => ({
     modalPaper: {
@@ -41,6 +43,7 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
     const [ userSearchValue, setUserSearchValue ] = useState({});
     const [ messageValue, setMessageValue ] = useState('');
     const [ error, setError ] = useState(null);
+    const { emit, on } = useContext(SocketContext);
 
     const closeAndReset = () => {
         setUserSearchValue({});
@@ -54,18 +57,27 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
             return setError('You must fill out all of the required fields');
         }
         try {
-            console.log(userSearchValue._id);
-            const response = await postConversation(
-                userSearchValue._id,
-                messageValue
-            );
-            console.log(response);
+            //console.log(userSearchValue._id);
+            // const response = await postConversation(
+            //     userSearchValue._id,
+            //     messageValue
+            // );
+            // console.log(response);
+            emit(socketActions.sendConversationRequest, userSearchValue._id, messageValue);
             closeAndReset();
-            history.push(`/conversation/${response.data.conversation._id}`); 
+            //history.push(`/conversation/${response.data.conversation._id}`); 
         } catch (err) {
             console.log(err);
         }
     }
+
+    useEffect(() => {
+        const off = on(socketActions.sendConversationResponse, data => {
+            const { conversation } = data;
+            history.push(`/conversation/${conversation._id}`);
+        });
+        return off;
+    }, []);
 
     return (
         <Modal open={isShowingModal} onClose={closeAndReset}>
