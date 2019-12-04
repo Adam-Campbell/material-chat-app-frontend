@@ -26,20 +26,29 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const ConversationListItem = ({ username, id }) => {
+const ConversationListItem = ({ otherParticipants, id }) => {
 
     const { container, link } = useStyles();
 
     const { isHovered, containerProps } = useHover();
 
     const initials = useMemo(() => {
-        return username.split(' ')
+        return otherParticipants[0].split(' ')
             .filter(el => el !== '')
             .slice(0,2)
             .map(el => el.slice(0,1))
             .join('')
             .toUpperCase();
-    }, [ username ]);
+    }, [ otherParticipants[0] ]);
+
+    const primaryText = useMemo(() => {
+        return otherParticipants.slice(0,2).join(', ');
+    }, [ otherParticipants ]);
+
+    const secondaryText = useMemo(() => {
+        const remaining = otherParticipants.length - 2;
+        return remaining > 0 ? `plus ${remaining} more` : null;
+    }, [ otherParticipants ]);
 
     return (
         <ListItem className={container} divider={true} selected={isHovered}>
@@ -47,14 +56,26 @@ const ConversationListItem = ({ username, id }) => {
                 <ListItemAvatar>
                     <Avatar>{initials}</Avatar>
                 </ListItemAvatar>
-                <ListItemText>{username}</ListItemText>
+                <ListItemText 
+                    primary={primaryText}
+                    secondary={secondaryText}
+                />
             </Link>
         </ListItem>
     );
 }
 
+/*
+
+{otherParticipants.map((username, idx) => (
+                    <ParticipantSummary username={'bruce wayne, adam campbell'} key={idx} remaining={3} />
+                ))}
+
+*/
+
 ConversationListItem.propTypes = {
-    username: PropTypes.string.isRequired
+    otherParticipants: PropTypes.arrayOf(PropTypes.string).isRequired,
+    id: PropTypes.string.isRequired
 };
 
 export default ConversationListItem;

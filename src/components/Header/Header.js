@@ -6,7 +6,7 @@ import ToolBar from '@material-ui/core/ToolBar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import BackIcon from '@material-ui/icons/ArrowBack';
 import CreateIcon from '@material-ui/icons/Create';
@@ -24,7 +24,11 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
+
+
 const ButtonLink = React.forwardRef((props, ref) => <Link innerRef={ref} {...props} />);
+
+const conversationRouteRegex = /^\/conversation\/\w+$/i;
 
 const Header = () => {
 
@@ -35,6 +39,9 @@ const Header = () => {
     const { disconnect } = useContext(SocketContext);
 
     const [ isShowingModal, setIsShowingModal ] = useState(false);
+
+    const { pathname } = useLocation();
+    
 
     const handleSignOut = async () => {
         try {
@@ -51,10 +58,12 @@ const Header = () => {
             <ToolBar>
                 {isSignedIn ? (
                     <>
-                        <Button color="inherit" component={ButtonLink} to="/conversations">
-                            <BackIcon className={backIcon} fontSize="small" />
-                            All
-                        </Button> 
+                        {conversationRouteRegex.test(pathname) && (
+                            <Button color="inherit" component={ButtonLink} to="/conversations">
+                                <BackIcon className={backIcon} fontSize="small" />
+                                All
+                            </Button>
+                        )}
                         <IconButton 
                             color="inherit" 
                             className={pushRightButton} 

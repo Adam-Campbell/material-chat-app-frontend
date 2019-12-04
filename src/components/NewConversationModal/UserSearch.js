@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from '@material-ui/core/TextField';
+import Chip from '@material-ui/core/Chip';
 import { searchUsers } from '../../Api';
 import { SocketContext } from '../SocketContext';
 import socketActions from '../../socketActions';
@@ -49,7 +50,11 @@ const UserSearch = ({ value, setValue }) => {
             inputValue={inputValue}
             noOptionsText="No matching users"
             value={value}
+            multiple={true}
             getOptionLabel={option => option.username || ''}
+            filterOptions={(options, state) => {
+                return options.filter(option => !(value.find(el => el._id === option._id)));
+            }}
             loading={isLoading}
             renderInput={params => <TextField {...params} label="Select user" variant="outlined" fullWidth />}
         />

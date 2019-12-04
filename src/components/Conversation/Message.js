@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import Avatar from '@material-ui/core/Avatar';
+import { CurrentUserContext } from '../CurrentUserContext';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -13,23 +15,47 @@ const useStyles = makeStyles(theme => ({
         marginBottom: theme.spacing(2),
         borderRadius: theme.shape.borderRadius,
         background: ({ isOwnMessage }) => isOwnMessage ? theme.palette.primary.main : theme.palette.secondary.main,
-        color: theme.palette.common.white
+        color: theme.palette.common.white,
+        position: 'relative'
+    },
+    userInitials: {
+        width: 30,
+        height: 30,
+        fontSize: 12,
+        position: 'absolute',
+        //left: 0,
+        left: ({ isOwnMessage }) => isOwnMessage ? 0 : '100%',
+        //right: 0,
+        bottom: 0,
+        transform: 'translate(-50%, 50%)'
     }
 }));
 
-const Message = ({ text, isOwnMessage }) => {
-    const { container } = useStyles({ isOwnMessage });
+const Message = ({ text, username, isOwnMessage }) => {
+
+    const { container, userInitials } = useStyles({ isOwnMessage });
+
+    const initials = useMemo(() => {
+        return username.split(' ')
+            .filter(el => el !== '')
+            .slice(0,2)
+            .map(el => el.slice(0,1))
+            .join('')
+            .toUpperCase();
+    }, [ username ]);
     
     return (
         <div className={container}>
             <Typography component="p" variant="body1" color="inherit">{text}</Typography>
+            <Avatar className={userInitials}>{initials}</Avatar>
         </div>
     );
 }
 
 Message.propTypes = {
     text: PropTypes.string.isRequired,
-    isOwnMessage: PropTypes.bool.isRequired
+    isOwnMessage: PropTypes.bool.isRequired,
+    username: PropTypes.string.isRequired
 };
 
 export default Message;

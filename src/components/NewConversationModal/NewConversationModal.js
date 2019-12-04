@@ -40,20 +40,20 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
 
     const history= useHistory();
 
-    const [ userSearchValue, setUserSearchValue ] = useState({});
+    const [ userSearchValue, setUserSearchValue ] = useState([]);
     const [ messageValue, setMessageValue ] = useState('');
     const [ error, setError ] = useState(null);
     const { emit, on } = useContext(SocketContext);
 
     const closeAndReset = () => {
-        setUserSearchValue({});
+        setUserSearchValue([]);
         setMessageValue('');
         closeModal();
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!userSearchValue._id || !messageValue) {
+        if (!userSearchValue.length || !messageValue) {
             return setError('You must fill out all of the required fields');
         }
         try {
@@ -63,7 +63,8 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
             //     messageValue
             // );
             // console.log(response);
-            emit(socketActions.sendConversationRequest, userSearchValue._id, messageValue);
+            const userIds = userSearchValue.map(user => user._id);
+            emit(socketActions.sendConversationRequest, userIds, messageValue);
             closeAndReset();
             //history.push(`/conversation/${response.data.conversation._id}`); 
         } catch (err) {

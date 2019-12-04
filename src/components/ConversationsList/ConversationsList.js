@@ -19,10 +19,14 @@ const useStyles = makeStyles(theme => ({
 
 const formatConversations = (conversations, currentUserId) => {
     return conversations.map(conversation => {
-        const otherParticipant = conversation.participants.find(user => user._id !== currentUserId);
+        //const otherParticipant = conversation.participants.find(user => user._id !== currentUserId);
+        const otherParticipants = conversation.participants
+            .filter(user => user._id !== currentUserId)
+            .map(user => user.username);
+
         return {
             ...conversation, 
-            with: otherParticipant.username
+            otherParticipants
         }
     });
 }
@@ -58,7 +62,7 @@ const ConversationsList = (props) => {
                     <ConversationListItem 
                         key={conversation._id}
                         id={conversation._id} 
-                        username={conversation.with} 
+                        otherParticipants={conversation.otherParticipants} 
                     />
                 ))}
             </List>
