@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from '@material-ui/core/TextField';
 import { searchUsers } from '../../Api';
+import { SocketContext } from '../SocketContext';
+import socketActions from '../../socketActions';
 
 const useStyles = makeStyles(theme => ({
 
@@ -18,20 +20,22 @@ const UserSearch = ({ value, setValue }) => {
     const [ isOpen, setIsOpen ] = useState(false);
     const [ options, setOptions ] = useState([]);
 
+    const { emit, on } = useContext(SocketContext);
+
     useEffect(() => {
-        (async () => {
-            if (inputValue) {
-                setIsLoading(true);
-                try {
-                    const response = await searchUsers(inputValue);
-                    setOptions(response.data.users);
-                    setIsLoading(false);
-                } catch (error) {
-                    console.log(error);
-                }
-            }
-        })();
-    }, [ inputValue ])
+        const off = on(socketActions.getUsersResponse, data => {
+            const { users } = data;
+            setOptions(users);
+            setIsLoading(false);
+        });
+        return off;
+    }, []);
+
+    useEffect(() => {
+        if (inputValue) {
+            emit(socketActions.getUsersRequest, inputValue);
+        }
+    }, [ inputValue ]);
 
     return (
         <Autocomplete 

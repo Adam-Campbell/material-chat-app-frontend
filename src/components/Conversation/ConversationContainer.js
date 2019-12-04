@@ -6,6 +6,7 @@ import { getConversation } from '../../Api';
 import Conversation from './Conversation';
 import LoadingSpinner from '../LoadingSpinner';
 import { Redirect } from 'react-router-dom';
+import socketActions from '../../socketActions';
 
 const ConversationContainer = () => {
 
@@ -29,8 +30,8 @@ const ConversationContainer = () => {
 
     useEffect(() => {
         if (isSignedIn) {
-            emit('getConversation', id);
-            const off = on('gotConversation', data => {
+            emit(socketActions.getConversationRequest, id);
+            const off = on(socketActions.getConversationResponse, data => {
                 console.log(data);
                 const { conversation } = data;
                 updateConversation(conversation);
@@ -40,7 +41,15 @@ const ConversationContainer = () => {
     }, [ isSignedIn, id ]);
 
     useEffect(() => {
-        const off = on('sentMessage', data => {
+        const off = on(socketActions.sendMessageResponse, data => {
+            const { conversation } = data;
+            updateConversation(conversation);
+        });
+        return off;
+    }, [ isSignedIn, id ]);
+
+    useEffect(() => {
+        const off = on(socketActions.pushConversation, data => {
             const { conversation } = data;
             updateConversation(conversation);
         });

@@ -5,6 +5,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { postMessage } from '../../Api';
 import { SocketContext } from '../SocketContext';
+import socketActions from '../../socketActions';
 
 const useStyles = makeStyles(theme => ({
     styledForm: {
@@ -43,7 +44,7 @@ const AddMessageForm = ({ conversationId, updateConversation }) => {
 
     const handleSubmit = e => {
         e.preventDefault();
-        emit('sendMessage', conversationId, message);
+        emit(socketActions.sendMessageRequest, conversationId, message);
         setMessage('');
     }
 

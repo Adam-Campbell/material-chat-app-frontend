@@ -8,6 +8,7 @@ import { CurrentUserContext } from '../CurrentUserContext';
 import { Redirect } from 'react-router-dom';
 import { getUsersConversations } from '../../Api';
 import { SocketContext } from '../SocketContext';
+import socketActions from '../../socketActions';
 
 const useStyles = makeStyles(theme => ({
     heading: {
@@ -36,8 +37,8 @@ const ConversationsList = (props) => {
 
     useEffect(() => {
         if (isSignedIn) {
-            emit('getConversations');
-            const off = on('gotConversations', data => {
+            emit(socketActions.getCurrentUsersConversationsRequest);
+            const off = on(socketActions.getCurrentUsersConversationsResponse, data => {
                 console.log(data);
                 const { conversations } = data;
                 const formattedConversations = formatConversations(conversations, currentUserId);
