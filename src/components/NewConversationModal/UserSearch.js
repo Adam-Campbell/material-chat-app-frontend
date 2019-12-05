@@ -9,12 +9,16 @@ import { SocketContext } from '../SocketContext';
 import socketActions from '../../socketActions';
 
 const useStyles = makeStyles(theme => ({
-
+    styledInput: {
+        width: '100%',
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2)
+    }
 }));
 
 const UserSearch = ({ value, setValue }) => {
 
-    const classes = useStyles();
+    const { styledInput } = useStyles();
 
     const [ inputValue, setInputValue ] = useState('');
     const [ isLoading, setIsLoading ] = useState(false);
@@ -39,8 +43,9 @@ const UserSearch = ({ value, setValue }) => {
     }, [ inputValue ]);
 
     return (
-        <Autocomplete 
-            id="my-autocomplete"
+        <Autocomplete
+            className={styledInput} 
+            id="users-autocomplete"
             options={options}
             open={Boolean(isOpen && inputValue)}
             onOpen={() => setIsOpen(true)}
