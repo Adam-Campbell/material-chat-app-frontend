@@ -7,6 +7,7 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import { Link } from 'react-router-dom';
 import useHover from '../useHover';
+import { getInitials } from '../../utils';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -33,12 +34,7 @@ const ConversationListItem = ({ otherParticipants, id }) => {
     const { isHovered, containerProps } = useHover();
 
     const initials = useMemo(() => {
-        return otherParticipants[0].split(' ')
-            .filter(el => el !== '')
-            .slice(0,2)
-            .map(el => el.slice(0,1))
-            .join('')
-            .toUpperCase();
+        return getInitials( otherParticipants[0] );
     }, [ otherParticipants[0] ]);
 
     const primaryText = useMemo(() => {

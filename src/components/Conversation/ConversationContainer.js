@@ -56,19 +56,6 @@ const ConversationContainer = () => {
         return off;
     }, [ isSignedIn, id ]);
 
-    // useEffect(() => {
-    //     if (!isSignedIn) return;
-    //     (async () => {
-    //         try {
-    //             const response = await getConversation(id);
-    //             updateConversation(response.data.conversation);
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     })();
-    // }, [ isSignedIn, id ]);
-
-
     if (!isSignedIn) {
         return <Redirect to="/sign-in" />
     } else if (isLoading || !conversation) {
