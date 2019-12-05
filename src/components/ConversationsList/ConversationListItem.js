@@ -4,14 +4,14 @@ import { makeStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import { Link } from 'react-router-dom';
 import useHover from '../useHover';
-import { getInitials } from '../../utils';
+import { getInitials, getFormattedTimestamp } from '../../utils';
 
 const useStyles = makeStyles(theme => ({
     container: {
-        //border: 'solid green 1px',
         paddingLeft: 0,
         paddingRight: 0,
     },
@@ -24,12 +24,15 @@ const useStyles = makeStyles(theme => ({
         paddingLeft: theme.spacing(2),
         paddingRight: theme.spacing(2),
         color: theme.palette.text.primary
+    },
+    timestamp: {
+        marginLeft: 'auto'
     }
 }));
 
-const ConversationListItem = ({ otherParticipants, id }) => {
+const ConversationListItem = ({ otherParticipants, id, latestActivity }) => {
 
-    const { container, link } = useStyles();
+    const { container, link, timestamp } = useStyles();
 
     const { isHovered, containerProps } = useHover();
 
@@ -46,6 +49,10 @@ const ConversationListItem = ({ otherParticipants, id }) => {
         return remaining > 0 ? `plus ${remaining} more` : null;
     }, [ otherParticipants ]);
 
+    const formattedTimestamp = useMemo(() => {
+        return getFormattedTimestamp(latestActivity);
+    }, [ latestActivity ]);
+
     return (
         <ListItem className={container} divider={true} selected={isHovered}>
             <Link className={link} to={`/conversation/${id}`} {...containerProps}>
@@ -56,22 +63,16 @@ const ConversationListItem = ({ otherParticipants, id }) => {
                     primary={primaryText}
                     secondary={secondaryText}
                 />
+                <Typography className={timestamp} variant="subtitle2" component="p">{formattedTimestamp}</Typography>
             </Link>
         </ListItem>
     );
 }
 
-/*
-
-{otherParticipants.map((username, idx) => (
-                    <ParticipantSummary username={'bruce wayne, adam campbell'} key={idx} remaining={3} />
-                ))}
-
-*/
-
 ConversationListItem.propTypes = {
     otherParticipants: PropTypes.arrayOf(PropTypes.string).isRequired,
-    id: PropTypes.string.isRequired
+    id: PropTypes.string.isRequired,
+    latestActivity: PropTypes.string.isRequired
 };
 
 export default ConversationListItem;
