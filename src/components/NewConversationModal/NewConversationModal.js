@@ -21,22 +21,34 @@ const useStyles = makeStyles(theme => ({
         transform: 'translate(-50%, -50%)',
         padding: theme.spacing(2),
         width: 'calc(100% - 64px)',
-        maxWidth: 450
+        maxWidth: 500
+    },
+    formHeading: {
+        marginBottom: theme.spacing(2)
+    },
+    styledForm: {
+        display: 'flex',
+        flexWrap: 'wrap'
+    },
+    styledInput: {
+        width: '100%',
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2)
+    },
+    submitButton: {
+        marginTop: theme.spacing(2),
+        marginLeft: 'auto',
+        marginRight: theme.spacing(1)
+    },
+    cancelButton: {
+        marginTop: theme.spacing(2),
     }
 }));
 
-const options = [
-    'adam',
-    'jamie',
-    'sarah',
-    'sam',
-    'emma',
-    'dave'
-]
 
 const NewConversationModal = ({ isShowingModal, closeModal }) => {
 
-    const { modalPaper } = useStyles();
+    const { modalPaper, formHeading, styledForm, styledInput, submitButton, cancelButton } = useStyles();
 
     const history= useHistory();
 
@@ -57,16 +69,9 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
             return setError('You must fill out all of the required fields');
         }
         try {
-            //console.log(userSearchValue._id);
-            // const response = await postConversation(
-            //     userSearchValue._id,
-            //     messageValue
-            // );
-            // console.log(response);
             const userIds = userSearchValue.map(user => user._id);
             emit(socketActions.sendConversationRequest, userIds, messageValue);
             closeAndReset();
-            //history.push(`/conversation/${response.data.conversation._id}`); 
         } catch (err) {
             console.log(err);
         }
@@ -84,21 +89,22 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
         <Modal open={isShowingModal} onClose={closeAndReset}>
             <Paper className={modalPaper}>
                 {error && <p>{error}</p>}
-                <Typography gutterBottom component="h2" variant="h5">New conversation</Typography>
-                <form onSubmit={handleSubmit}>
+                <Typography className={formHeading} component="h2" variant="h5">New conversation</Typography>
+                <form onSubmit={handleSubmit} className={styledForm}>
                     <UserSearch 
                         value={userSearchValue}
                         setValue={setUserSearchValue}
                     />
-                    <TextField 
+                    <TextField
+                        className={styledInput}
                         type="text"
                         label="Write a message"
                         variant="outlined"
                         value={messageValue}
                         onChange={e => setMessageValue(e.target.value)}
                     />
-                    <Button variant="contained" color="primary" type="submit">Send</Button>
-                    <Button variant="contained" color="secondary" onClick={closeAndReset}>Cancel</Button>
+                    <Button className={submitButton} variant="contained" color="primary" type="submit">Send</Button>
+                    <Button className={cancelButton} variant="contained" color="secondary" onClick={closeAndReset}>Cancel</Button>
                 </form>
             </Paper>
         </Modal>

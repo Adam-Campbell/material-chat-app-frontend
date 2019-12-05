@@ -28,13 +28,16 @@ const useStyles = makeStyles(theme => ({
     },
     accountIcon: {
         alignSelf: 'center'
+    },
+    signUpLink: {
+        alignSelf: 'flex-end'
     }
 }));
 
 const ComposedLink = React.forwardRef((props, ref) => <RouterLink innerRef={ref} {...props} />);
 
 const SignInForm = () => {
-    const { styledForm, textInput, submitButton, accountIcon } = useStyles();
+    const { styledForm, textInput, submitButton, accountIcon, signUpLink } = useStyles();
     const [ username, setUsername ] = useState('');
     const [ password, setPassword ] = useState('');
 
@@ -96,7 +99,7 @@ const SignInForm = () => {
                 onChange={e => setPassword(e.target.value)}
             />
             <Button className={submitButton} variant="contained" color="primary" type="submit">Sign In</Button>
-            <Link align="right" component={ComposedLink} to="/sign-up">Don't have an account? Sign up!</Link>
+            <Link className={signUpLink} component={ComposedLink} to="/sign-up">Don't have an account? Sign up!</Link>
         </form>
     );
 }
