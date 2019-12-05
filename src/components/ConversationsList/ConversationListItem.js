@@ -9,6 +9,8 @@ import Avatar from '@material-ui/core/Avatar';
 import { Link } from 'react-router-dom';
 import useHover from '../useHover';
 import { getInitials, getFormattedTimestamp } from '../../utils';
+import NewMessagesIcon from '@material-ui/icons/NewReleases';
+import EmailIcon from '@material-ui/icons/Email';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -25,14 +27,20 @@ const useStyles = makeStyles(theme => ({
         paddingRight: theme.spacing(2),
         color: theme.palette.text.primary
     },
+    participantsText: {
+        marginLeft: 'auto'
+    },
     timestamp: {
         marginLeft: 'auto'
+    },
+    newMessagesIcon: {
+        marginRight: theme.spacing(2)
     }
 }));
 
-const ConversationListItem = ({ otherParticipants, id, latestActivity }) => {
+const ConversationListItem = ({ otherParticipants, id, latestActivity, hasUnreadMessages }) => {
 
-    const { container, link, timestamp } = useStyles();
+    const { container, link, timestamp, participantsText, newMessagesIcon } = useStyles();
 
     const { isHovered, containerProps } = useHover();
 
@@ -60,10 +68,12 @@ const ConversationListItem = ({ otherParticipants, id, latestActivity }) => {
                     <Avatar>{initials}</Avatar>
                 </ListItemAvatar>
                 <ListItemText 
+                    className={participantsText}
                     primary={primaryText}
                     secondary={secondaryText}
                 />
-                <Typography className={timestamp} variant="subtitle2" component="p">{formattedTimestamp}</Typography>
+                {hasUnreadMessages && <NewMessagesIcon className={newMessagesIcon} color="secondary" />}
+                <Typography variant="subtitle2" component="p">{formattedTimestamp}</Typography>
             </Link>
         </ListItem>
     );
@@ -72,7 +82,8 @@ const ConversationListItem = ({ otherParticipants, id, latestActivity }) => {
 ConversationListItem.propTypes = {
     otherParticipants: PropTypes.arrayOf(PropTypes.string).isRequired,
     id: PropTypes.string.isRequired,
-    latestActivity: PropTypes.string.isRequired
+    latestActivity: PropTypes.string.isRequired,
+    hasUnreadMessages: PropTypes.bool.isRequired
 };
 
 export default ConversationListItem;
