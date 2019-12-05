@@ -62,7 +62,8 @@ const ConversationsList = (props) => {
                     <ConversationListItem 
                         key={conversation._id}
                         id={conversation._id} 
-                        otherParticipants={conversation.otherParticipants} 
+                        otherParticipants={conversation.otherParticipants}
+                        latestActivity={conversation.latestActivity}
                     />
                 ))}
             </List>
