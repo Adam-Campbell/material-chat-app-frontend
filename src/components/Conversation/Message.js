@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import { CurrentUserContext } from '../CurrentUserContext';
+import { getInitials } from '../../utils';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -23,9 +24,7 @@ const useStyles = makeStyles(theme => ({
         height: 30,
         fontSize: 12,
         position: 'absolute',
-        //left: 0,
         left: ({ isOwnMessage }) => isOwnMessage ? 0 : '100%',
-        //right: 0,
         bottom: 0,
         transform: 'translate(-50%, 50%)'
     }
@@ -36,12 +35,7 @@ const Message = ({ text, username, isOwnMessage }) => {
     const { container, userInitials } = useStyles({ isOwnMessage });
 
     const initials = useMemo(() => {
-        return username.split(' ')
-            .filter(el => el !== '')
-            .slice(0,2)
-            .map(el => el.slice(0,1))
-            .join('')
-            .toUpperCase();
+        return getInitials(username);
     }, [ username ]);
     
     return (
