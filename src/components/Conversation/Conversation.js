@@ -19,7 +19,12 @@ const Conversation = ({ conversation, updateConversation }) => {
         <>
             <div className={messageStreamContainer}>
                 {conversation.messages.map(msg => (
-                    <Message key={msg._id} text={msg.body} isOwnMessage={msg.isOwnMessage} />
+                    <Message 
+                        key={msg._id} 
+                        text={msg.body} 
+                        isOwnMessage={msg.isOwnMessage} 
+                        username={msg.author.username}
+                    />
                 ))}
             </div>
             <AddMessageForm 
@@ -35,7 +40,10 @@ Conversation.propTypes = {
         _id: PropTypes.string.isRequired,
         messages: PropTypes.arrayOf(PropTypes.shape({
             _id: PropTypes.string.isRequired,
-            author: PropTypes.string.isRequired,
+            author: PropTypes.shape({
+                username: PropTypes.string.isRequired,
+                _id: PropTypes.string.isRequired
+            }).isRequired,
             body: PropTypes.string.isRequired,
             isOwnMessage: PropTypes.bool.isRequired
         })).isRequired,

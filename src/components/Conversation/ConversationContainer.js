@@ -22,7 +22,7 @@ const ConversationContainer = () => {
             ...conversation,
             messages: conversation.messages.map(msg => ({
                 ...msg,
-                isOwnMessage: msg.author === currentUserId
+                isOwnMessage: msg.author._id === currentUserId
             }))
         };
         setConversation(formattedConversation);
@@ -74,7 +74,7 @@ const ConversationContainer = () => {
     } else if (isLoading || !conversation) {
         return <LoadingSpinner />
     } else {
-        return <Conversation 
+        return <Conversation
             conversation={conversation}
             updateConversation={updateConversation}
         />
