@@ -26,7 +26,9 @@ const socketActions = {
     sendConversationViewedAtError: 'send::conversationViewedAt::error',
     // push actions for each resource that the server pushes to the client without
     // the client requesting it
-    pushConversation: 'push::conversation'
+    pushConversation: 'push::conversation',
+    pushMessage: 'push::message',
+    pushLastViewed: 'push::lastViewed'
 };
 
 export default socketActions;

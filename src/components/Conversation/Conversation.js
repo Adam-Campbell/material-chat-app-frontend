@@ -11,7 +11,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const Conversation = ({ conversation, updateConversation }) => {
+const Conversation = ({ conversation }) => {
 
     const { messageStreamContainer } = useStyles();
     
@@ -29,7 +29,6 @@ const Conversation = ({ conversation, updateConversation }) => {
             </div>
             <AddMessageForm 
                 conversationId={conversation._id}
-                updateConversation={updateConversation}
             />
         </>
     );
@@ -51,8 +50,7 @@ Conversation.propTypes = {
             _id: PropTypes.string.isRequired,
             username: PropTypes.string.isRequired
         })).isRequired
-    }).isRequired,
-    updateConversation: PropTypes.func.isRequired
+    }).isRequired
 };
 
 export default Conversation;

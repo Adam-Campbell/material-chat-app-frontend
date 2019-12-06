@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const AddMessageForm = ({ conversationId, updateConversation }) => {
+const AddMessageForm = ({ conversationId }) => {
 
     const { styledForm, messageInput } = useStyles();
 
@@ -70,8 +70,7 @@ const AddMessageForm = ({ conversationId, updateConversation }) => {
 }
 
 AddMessageForm.propTypes = {
-    conversationId: PropTypes.string.isRequired,
-    updateConversation: PropTypes.func.isRequired
+    conversationId: PropTypes.string.isRequired
 };
 
 export default AddMessageForm;

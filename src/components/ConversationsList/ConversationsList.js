@@ -54,6 +54,13 @@ const ConversationsList = (props) => {
         });
     }, [ isSignedIn, currentUserId ]);
 
+    const updateConversationActivity = useCallback((conversationId, latestActivity) => {
+        dispatch({
+            type: actionTypes.updateConversationActivity,
+            payload: { conversationId, latestActivity, currentUserId }
+        });
+    }, [ isSignedIn, currentUserId ])
+
     const { emit, on } = useContext(SocketContext);
 
     useEffect(() => {
@@ -74,6 +81,17 @@ const ConversationsList = (props) => {
                 console.log(data);
                 const { conversation } = data;
                 storeOneConversation(conversation);
+            });
+            return off;
+        }
+    }, [ isSignedIn, currentUserId ]);
+
+    useEffect(() => {
+        if (isSignedIn) {
+            const off = on(socketActions.pushMessage, data => {
+                const { message, conversationId } = data;
+                console.log(data);
+                updateConversationActivity(conversationId, message.createdAt)
             });
             return off;
         }
