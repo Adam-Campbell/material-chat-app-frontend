@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const AddMessageForm = ({ conversationId, updateConversation }) => {
+const AddMessageForm = ({ conversationId }) => {
 
     const { styledForm, messageInput } = useStyles();
 
@@ -29,22 +29,9 @@ const AddMessageForm = ({ conversationId, updateConversation }) => {
 
     const { emit } = useContext(SocketContext);
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     console.log(message);
-    //     try {
-    //         const response = await postMessage(conversationId, message);
-    //         console.log(response.data.conversation);
-    //         updateConversation(response.data.conversation);
-    //         setMessage('');
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
-
     const handleSubmit = e => {
         e.preventDefault();
-        emit(socketActions.sendMessageRequest, conversationId, message);
+        emit(socketActions.sendMessage, { conversationId, messageText: message });
         setMessage('');
     }
 
@@ -70,8 +57,7 @@ const AddMessageForm = ({ conversationId, updateConversation }) => {
 }
 
 AddMessageForm.propTypes = {
-    conversationId: PropTypes.string.isRequired,
-    updateConversation: PropTypes.func.isRequired
+    conversationId: PropTypes.string.isRequired
 };
 
 export default AddMessageForm;

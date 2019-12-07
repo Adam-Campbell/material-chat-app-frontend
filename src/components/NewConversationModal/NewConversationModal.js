@@ -70,7 +70,7 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
         }
         try {
             const userIds = userSearchValue.map(user => user._id);
-            emit(socketActions.sendConversationRequest, userIds, messageValue);
+            emit(socketActions.sendConversation, { userIds, messageText: messageValue });
             closeAndReset();
         } catch (err) {
             console.log(err);
@@ -78,9 +78,9 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
     }
 
     useEffect(() => {
-        const off = on(socketActions.sendConversationResponse, data => {
-            const { conversation } = data;
-            history.push(`/conversation/${conversation._id}`);
+        const off = on(socketActions.sendConversationSuccess, data => {
+            const { conversationId } = data;
+            history.push(`/conversation/${conversationId}`);
         });
         return off;
     }, []);
