@@ -24,6 +24,7 @@ const Conversation = ({ conversation }) => {
                         text={msg.body} 
                         isOwnMessage={msg.isOwnMessage} 
                         username={msg.author.username}
+                        createdAt={msg.createdAt}
                     />
                 ))}
             </div>

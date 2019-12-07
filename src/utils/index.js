@@ -1,3 +1,3 @@
 export * from './getInitials';
-export * from './getFormattedTimestamp';
+export * from './timestampFormatUtils';
 
