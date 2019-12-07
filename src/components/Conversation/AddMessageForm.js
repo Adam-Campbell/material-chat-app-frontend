@@ -29,22 +29,9 @@ const AddMessageForm = ({ conversationId }) => {
 
     const { emit } = useContext(SocketContext);
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     console.log(message);
-    //     try {
-    //         const response = await postMessage(conversationId, message);
-    //         console.log(response.data.conversation);
-    //         updateConversation(response.data.conversation);
-    //         setMessage('');
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
-
     const handleSubmit = e => {
         e.preventDefault();
-        emit(socketActions.sendMessageRequest, conversationId, message);
+        emit(socketActions.sendMessage, { conversationId, messageText: message });
         setMessage('');
     }
 

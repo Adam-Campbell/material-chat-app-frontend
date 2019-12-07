@@ -20,7 +20,7 @@ const ConversationContainer = () => {
     // Fetch the conversation once ready
     useEffect(() => {
         if (isSignedIn) {
-            emit(socketActions.getConversationRequest, id);
+            emit(socketActions.getConversationRequest, { conversationId: id });
             dispatch({ type: actionTypes.fetchConversation })
         }
     }, [ isSignedIn, id ]);
@@ -28,9 +28,8 @@ const ConversationContainer = () => {
     // Set up the subscription to react to the conversation being pushed to the client
     useEffect(() => {
         if (isSignedIn) {
-            const off = on(socketActions.getConversationResponse, data => {
-                console.log(data);
-                const { conversation } = data;
+            const off = on(socketActions.getConversationResponse, ({ conversation }) => {
+                console.log(conversation);
                 dispatch({
                     type: actionTypes.storeConversation,
                     payload: { 
@@ -39,7 +38,7 @@ const ConversationContainer = () => {
                     }
                 });
                 const timestamp = conversation.latestActivity;
-                emit(socketActions.sendConversationViewedAtRequest, id, timestamp);
+                emit(socketActions.sendLastViewed, { conversationId: id, timestamp });
             });
             return off;
         }
@@ -79,7 +78,7 @@ const ConversationContainer = () => {
                     }
                 });
                 const timestamp = message.createdAt;
-                emit(socketActions.sendConversationViewedAtRequest, id, timestamp);
+                emit(socketActions.sendLastViewed, { conversationId: id, timestamp });
             });
             return off;
         }
@@ -98,126 +97,3 @@ const ConversationContainer = () => {
 }
 
 export default ConversationContainer;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const _ConversationContainer = () => {
-
-    const { id } = useParams();
-    const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
-    const [ conversation, setConversation ] = useState(null);
-    const [ isLoading, setIsLoading ] = useState(false);
-
-    const { emit, on } = useContext(SocketContext);
-
-    const updateConversation = useCallback((conversation) => {
-        const formattedConversation = {
-            ...conversation,
-            messages: conversation.messages.map(msg => ({
-                ...msg,
-                isOwnMessage: msg.author._id === currentUserId
-            }))
-        };
-        setConversation(formattedConversation);
-    }, [ currentUserId ]);
-
-    // Data fetching
-    useEffect(() => {
-        if (isSignedIn) {
-            emit(socketActions.getConversationRequest, id);
-            const off = on(socketActions.getConversationResponse, data => {
-                console.log(data);
-                const { conversation } = data;
-                updateConversation(conversation);
-                const timestamp = conversation.latestActivity;
-                emit(socketActions.sendConversationViewedAtRequest, id, timestamp);
-            });
-            return off;
-        }
-    }, [ isSignedIn, id ]);
-
-    useEffect(() => {
-        if (isSignedIn) {
-            const off = on(socketActions.pushLastViewed, data => {
-                console.log(data);
-            });
-            return off;
-        }
-    }, [ isSignedIn, id ]);
-
-    // Update after this client has sent a message
-    useEffect(() => {
-        const off = on(socketActions.sendMessageResponse, data => {
-            // const { conversation } = data;
-            // updateConversation(conversation);
-            // emit(socketActions.sendConversationViewedAtRequest, id, conversation.latestActivity);
-        });
-        return off;
-    }, [ isSignedIn, id ]);
-
-    // Update after this conversation has been pushed to this client 
-    // (can happen for a number of reasons).
-    useEffect(() => {
-        const off = on(socketActions.pushConversation, data => {
-            // console.log(data);
-            // const { conversation } = data;
-            // if (conversation._id === id) {
-            //     updateConversation(conversation);
-            //     emit(socketActions.sendConversationViewedAtRequest, id, conversation.latestActivity);
-            // }
-        });
-        return off;
-    }, [ isSignedIn, id ]);
-
-    useEffect(() => {
-        const off = on(socketActions.pushMessage, data => {
-            console.log(data);
-        })
-    }, [ isSignedIn, id ]);
-
-    // React to the response we receive after specifically this client sends a
-    // sendConversationViewedAtRequest
-    useEffect(() => {
-        const off = on(socketActions.sendConversationViewedAtResponse, data => {
-            const { conversation } = data;
-            updateConversation(conversation);
-        });
-        return off;
-    }, [ isSignedIn, id ]);
-
-    if (!isSignedIn) {
-        return <Redirect to="/sign-in" />
-    } else if (isLoading || !conversation) {
-        return <LoadingSpinner />
-    } else {
-        return <Conversation
-            conversation={conversation}
-            updateConversation={updateConversation}
-        />
-    }
-    
-}

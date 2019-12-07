@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useReducer, useCallback } from 'react';
+import React, { useContext, useEffect, useReducer, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -18,26 +18,11 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const formatConversations = (conversations, currentUserId) => {
-    return conversations.map(conversation => {
-        //const otherParticipant = conversation.participants.find(user => user._id !== currentUserId);
-        const otherParticipants = conversation.participants
-            .filter(user => user._id !== currentUserId)
-            .map(user => user.username);
-
-        return {
-            ...conversation, 
-            otherParticipants
-        }
-    });
-}
-
 const ConversationsList = (props) => {
 
     const { heading } = useStyles();
     const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
-    //const [ conversations, setConversations ] = useState([]);
-
+    const { emit, on } = useContext(SocketContext);
     const [ conversations, dispatch ] = useReducer(reducer, []);
 
     const storeConversations = useCallback((conversations) => {
@@ -61,7 +46,7 @@ const ConversationsList = (props) => {
         });
     }, [ isSignedIn, currentUserId ])
 
-    const { emit, on } = useContext(SocketContext);
+    
 
     useEffect(() => {
         if (isSignedIn) {

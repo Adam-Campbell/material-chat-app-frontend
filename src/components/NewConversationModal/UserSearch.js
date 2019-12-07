@@ -38,7 +38,7 @@ const UserSearch = ({ value, setValue }) => {
 
     useEffect(() => {
         if (inputValue) {
-            emit(socketActions.getUsersRequest, inputValue);
+            emit(socketActions.getUsersRequest, { query: inputValue });
         }
     }, [ inputValue ]);
 

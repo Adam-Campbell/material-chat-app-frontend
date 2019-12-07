@@ -5,31 +5,11 @@ export const actionTypes = {
     updateLastViewed: 'updateLastViewed'
 };
 
-/*
-
-storeConversation payload: 
-  conversation
-  currentUserId
-
-addMessage
-  message
-  currentUserId
-  conversationId
-  currentConversationId
-
-updateLastViewed
-  userId
-  timestamp
-  conversationId
-  currentConversationId
-
-*/
 
 export const initialState = {
     isLoading: false,
     conversation: null
 }
-
 
 const formatMessage = (message, currentUserId) => ({
     ...message, 
@@ -89,11 +69,6 @@ export const reducer = (state, action) => {
                 conversation: {
                     ...state.conversation,
                     participantsLastViewed: action.payload.lastViewed
-                    // participantsLastViewed: updateLastViewedArr(
-                    //     state.conversation.participantsLastViewed,
-                    //     action.payload.userId,
-                    //     action.payload.timestamp
-                    // )
                 }
             } : state;
 
