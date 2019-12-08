@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import { CurrentUserContext } from '../CurrentUserContext';
-import { formatTime } from '../../utils';
+import { formatTime, formatDate } from '../../utils';
+import Divider from '@material-ui/core/Divider';
 
 const useStyles = makeStyles(theme => ({
     outerContainer: {
@@ -11,6 +12,19 @@ const useStyles = makeStyles(theme => ({
         marginBottom: theme.spacing(2),
         display: 'flex',
         flexDirection: 'column'
+    },
+    dateContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: theme.spacing(2)
+    },
+    dateContainerDivider: {
+        flexGrow: 1
+    },
+    dateContainerText: {
+        marginLeft: theme.spacing(2),
+        marginRight: theme.spacing(2)
     },
     messageContainer: {
         padding: theme.spacing(2),
@@ -54,7 +68,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-function getLastViewedString(otherParticipantsLastViewed, createdAt) {
+const getLastViewedString = (otherParticipantsLastViewed, createdAt) => {
     const totalOtherParticipants = otherParticipantsLastViewed.length;
     const matchingPlvs = otherParticipantsLastViewed.filter(plv => plv.lastViewed === createdAt)
     .map(plv => plv.username);
@@ -76,10 +90,32 @@ function getLastViewedString(otherParticipantsLastViewed, createdAt) {
     }
 }
 
-const Message = ({ text, username, isOwnMessage, createdAt, otherParticipantsLastViewed }) => {
+const getDateMarkerString = (createdAt, previousCreatedAt) => {
+    if (!previousCreatedAt) {
+        return formatDate( new Date(createdAt) );
+    } else {
+        const createdDate = formatDate( new Date(createdAt) );
+        const previousCreatedDate = formatDate( new Date(previousCreatedAt) );
+        return createdDate === previousCreatedDate ?
+            false :
+            createdDate
+    }
+}
+
+const Message = ({ 
+    text, 
+    username, 
+    isOwnMessage, 
+    createdAt, 
+    previousCreatedAt, 
+    otherParticipantsLastViewed 
+}) => {
 
     const { 
         outerContainer, 
+        dateContainer,
+        dateContainerDivider,
+        dateContainerText,
         messageContainer, 
         infoContainer, 
         usernameText, 
@@ -89,14 +125,24 @@ const Message = ({ text, username, isOwnMessage, createdAt, otherParticipantsLas
     } = useStyles({ isOwnMessage });
 
     const timeCreated = useMemo(() => {
-        console.log('timeCreated recalculated')
         return formatTime( new Date( createdAt ) );
     }, [ createdAt ]);
+
+    const dateMarkerString = useMemo(() => {
+        return getDateMarkerString(createdAt, previousCreatedAt);
+    }, [ createdAt, previousCreatedAt ]);
 
     const lastViewedString = getLastViewedString(otherParticipantsLastViewed, createdAt);
     
     return (
         <div className={outerContainer}>
+            {dateMarkerString && (
+                <div className={dateContainer}>
+                    <Divider className={dateContainerDivider} component="span" light={true} />
+                    <Typography className={dateContainerText} component="p" variant="body1" color="textSecondary">{dateMarkerString}</Typography>
+                    <Divider className={dateContainerDivider} component="span" light={true} />
+                </div>
+            )}
             <div className={infoContainer}>
                 <Typography className={usernameText} component="p" variant="body1" color="textPrimary">{username}</Typography>
                 <Typography className={timeCreatedText} component="p" variant="body1" color="textSecondary">{timeCreated}</Typography>
@@ -118,6 +164,7 @@ Message.propTypes = {
     isOwnMessage: PropTypes.bool.isRequired,
     username: PropTypes.string.isRequired,
     createdAt: PropTypes.string.isRequired,
+    previousCreatedAt: PropTypes.string,
     otherParticipantsLastViewed: PropTypes.arrayOf(PropTypes.shape({
         lastViewed: PropTypes.string,
         username: PropTypes.string.isRequired

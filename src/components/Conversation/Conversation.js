@@ -29,13 +29,14 @@ const Conversation = ({ conversation }) => {
     return (
         <>
             <div className={messageStreamContainer}>
-                {conversation.messages.map(msg => (
+                {conversation.messages.map((msg, idx, arr) => (
                     <Message 
                         key={msg._id} 
                         text={msg.body} 
                         isOwnMessage={msg.isOwnMessage} 
                         username={msg.author.username}
                         createdAt={msg.createdAt}
+                        previousCreatedAt={idx > 0 ? arr[idx-1].createdAt : null}
                         otherParticipantsLastViewed={otherParticipantsLastViewed}
                     />
                 ))}
