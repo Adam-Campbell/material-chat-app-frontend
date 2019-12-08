@@ -54,7 +54,29 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const Message = ({ text, username, isOwnMessage, createdAt }) => {
+function getLastViewedString(otherParticipantsLastViewed, createdAt) {
+    const totalOtherParticipants = otherParticipantsLastViewed.length;
+    const matchingPlvs = otherParticipantsLastViewed.filter(plv => plv.lastViewed === createdAt)
+    .map(plv => plv.username);
+    
+    if (matchingPlvs.length === 0) {
+        return false;
+    }
+    if (matchingPlvs.length === 1) {
+        return totalOtherParticipants === 1 ? 'Seen' : `Seen by ${matchingPlvs[0]}`;
+    }
+    if (matchingPlvs.length > 1) {
+        if (matchingPlvs.length === totalOtherParticipants) {
+            return 'Seen by everyone';
+        } else {
+            return matchingPlvs.length === 2 ?
+                `Seen by ${matchingPlvs[0]} and ${matchingPlvs[1]}` :
+                `Seen by ${matchingPlvs[0]} and ${matchingPlvs.length - 1} ${matchingPlvs.length > 2 ? 'others' : 'other'}`
+        }
+    }
+}
+
+const Message = ({ text, username, isOwnMessage, createdAt, otherParticipantsLastViewed }) => {
 
     const { 
         outerContainer, 
@@ -67,8 +89,11 @@ const Message = ({ text, username, isOwnMessage, createdAt }) => {
     } = useStyles({ isOwnMessage });
 
     const timeCreated = useMemo(() => {
+        console.log('timeCreated recalculated')
         return formatTime( new Date( createdAt ) );
     }, [ createdAt ]);
+
+    const lastViewedString = getLastViewedString(otherParticipantsLastViewed, createdAt);
     
     return (
         <div className={outerContainer}>
@@ -79,9 +104,11 @@ const Message = ({ text, username, isOwnMessage, createdAt }) => {
             <div className={messageContainer}>
                 <Typography component="p" variant="body1" color="inherit">{text}</Typography>
             </div>
-            <div className={statusContainer}>
-                <Typography className={statusText} component="p" variant="body1" color="textSecondary">Seen by blah and blah</Typography>
-            </div>
+            {lastViewedString && (
+                <div className={statusContainer}>
+                    <Typography className={statusText} component="p" variant="body1" color="textSecondary">{lastViewedString}</Typography>
+                </div>
+            )}
         </div>
     );
 }
@@ -90,7 +117,11 @@ Message.propTypes = {
     text: PropTypes.string.isRequired,
     isOwnMessage: PropTypes.bool.isRequired,
     username: PropTypes.string.isRequired,
-    createdAt: PropTypes.string.isRequired
+    createdAt: PropTypes.string.isRequired,
+    otherParticipantsLastViewed: PropTypes.arrayOf(PropTypes.shape({
+        lastViewed: PropTypes.string,
+        username: PropTypes.string.isRequired
+    })).isRequired
 };
 
 export default Message;

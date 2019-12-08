@@ -27,6 +27,7 @@ const updateLastViewedArr = (lastViewedArr, userId, timestamp) => {
     } : record);
 }
 
+
 export const reducer = (state, action) => {
     switch (action.type) {
 

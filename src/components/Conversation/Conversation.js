@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Message from './Message';
 import AddMessageForm from './AddMessageForm';
+import { CurrentUserContext } from '../CurrentUserContext';
 
 const useStyles = makeStyles(theme => ({
     messageStreamContainer: {
@@ -14,6 +15,16 @@ const useStyles = makeStyles(theme => ({
 const Conversation = ({ conversation }) => {
 
     const { messageStreamContainer } = useStyles();
+
+    const { currentUserId } = useContext(CurrentUserContext);
+
+    const otherParticipantsLastViewed = useMemo(() => {
+        return conversation.participantsLastViewed.filter(plv => plv.user._id !== currentUserId)
+        .map(plv => ({
+            lastViewed: plv.lastViewed,
+            username: plv.user.username
+        }))
+    }, [ conversation.participantsLastViewed, currentUserId ]);
     
     return (
         <>
@@ -25,6 +36,7 @@ const Conversation = ({ conversation }) => {
                         isOwnMessage={msg.isOwnMessage} 
                         username={msg.author.username}
                         createdAt={msg.createdAt}
+                        otherParticipantsLastViewed={otherParticipantsLastViewed}
                     />
                 ))}
             </div>
