@@ -2,14 +2,14 @@ const isToday = timestamp => timestamp.toDateString() === new Date().toDateStrin
 
 const padNum = num => num < 10 ? `0${num}` : num;
 
-const formatDate = timestamp => {
+export const formatDate = timestamp => {
     const date = padNum( timestamp.getUTCDate() );
     const month = padNum( timestamp.getUTCMonth() + 1 );
     const year = timestamp.getUTCFullYear();
     return `${date}/${month}/${year}`;
 };
 
-const formatTime = timestamp => {
+export const formatTime = timestamp => {
     const minutes = padNum( timestamp.getUTCMinutes() );
     const hours = timestamp.getUTCHours();
     return `${hours}:${minutes}`;
