@@ -11,14 +11,14 @@ export const initialState = {
     conversation: null
 }
 
-const formatMessage = (message, currentUserId) => ({
-    ...message, 
-    isOwnMessage: message.author._id === currentUserId
-});
+// const formatMessage = (message, currentUserId) => ({
+//     ...message, 
+//     isOwnMessage: message.author._id === currentUserId
+// });
 
-const formatMessages = (messages, currentUserId) => {
-    return messages.map(message => formatMessage(message, currentUserId));
-}
+// const formatMessages = (messages, currentUserId) => {
+//     return messages.map(message => formatMessage(message, currentUserId));
+// }
 
 const updateLastViewedArr = (lastViewedArr, userId, timestamp) => {
     return lastViewedArr.map(record => userId === record.user._id ? {
@@ -42,10 +42,6 @@ export const reducer = (state, action) => {
                 isLoading: false,
                 conversation: {
                     ...action.payload.conversation,
-                    messages: formatMessages(
-                        action.payload.conversation.messages, 
-                        action.payload.currentUserId
-                    )
                 }
             }
 
@@ -56,10 +52,7 @@ export const reducer = (state, action) => {
                     ...state.conversation,
                     messages: [
                         ...state.conversation.messages,
-                        formatMessage(
-                            action.payload.message,
-                            action.payload.currentUserId
-                        )
+                        action.payload.message
                     ]
                 }
             } : state;

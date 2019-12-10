@@ -22,25 +22,29 @@ const App = () => {
             <CssBaseline />
             <BrowserRouter>
                 <Header isLoggedIn={isSignedIn} />
-                <CenteredContainer>
-                    <Switch>
-                        <Route path="/sign-up">
+                <Switch>
+                    <Route path="/sign-up">
+                        <CenteredContainer>
                             <SignUpForm />
-                        </Route>
-                        <Route path="/sign-in">
+                        </CenteredContainer>
+                    </Route>
+                    <Route path="/sign-in">
+                        <CenteredContainer>
                             <SignInForm />
-                        </Route>
-                        <Route path="/conversations">
+                        </CenteredContainer>
+                    </Route>
+                    <Route path="/conversations">
+                        <CenteredContainer>
                             <ConversationsList />
-                        </Route>
-                        <Route path="/conversation/:id">
+                        </CenteredContainer>
+                    </Route>
+                    <Route path="/conversation/:id">
                             <Conversation />
-                        </Route>
-                        <Route path="/">
-                            <Redirect to={isSignedIn ? '/conversations' : '/sign-in'} />
-                        </Route>
-                    </Switch>
-                </CenteredContainer>
+                    </Route>
+                    <Route path="/">
+                        <Redirect to={isSignedIn ? '/conversations' : '/sign-in'} />
+                    </Route>
+                </Switch>
             </BrowserRouter>
         </>
     );

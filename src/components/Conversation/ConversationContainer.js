@@ -8,7 +8,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import { Redirect } from 'react-router-dom';
 import socketActions from '../../socketActions';
 import { actionTypes, initialState, reducer } from './reducer';
-
+import { ConversationContext } from './ConversationContext';
 
 const ConversationContainer = () => {
 
@@ -32,23 +32,20 @@ const ConversationContainer = () => {
                 console.log(conversation);
                 dispatch({
                     type: actionTypes.storeConversation,
-                    payload: { 
-                        conversation,
-                        currentUserId
-                    }
+                    payload: { conversation }
                 });
                 const timestamp = conversation.latestActivity;
                 emit(socketActions.sendLastViewed, { conversationId: id, timestamp });
             });
             return off;
         }
-    }, [ isSignedIn, id, currentUserId ]);
+    }, [ isSignedIn, id ]);
 
     // Set up subscription to react to lastViewed status being pushed to client
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.pushLastViewed, data => {
-                console.log(data);
+                //console.log(data);
                 const { lastViewed, conversationId } = data;
                 dispatch({
                     type: actionTypes.updateLastViewed,
@@ -73,8 +70,7 @@ const ConversationContainer = () => {
                     payload: {
                         conversationId,
                         currentConversationId: id, 
-                        message,
-                        currentUserId
+                        message
                     }
                 });
                 const timestamp = message.createdAt;
@@ -82,16 +78,18 @@ const ConversationContainer = () => {
             });
             return off;
         }
-    }, [ isSignedIn, id, currentUserId ]);
+    }, [ isSignedIn, id ]);
 
     if (!isSignedIn) {
         return <Redirect to="/sign-in" />
     } else if (state.isLoading || !state.conversation) {
         return <LoadingSpinner />
     } else {
-        return <Conversation
-            conversation={state.conversation}
-        />
+        return (
+            <Conversation
+                conversation={state.conversation}
+            />
+        );
     }
     
 }
