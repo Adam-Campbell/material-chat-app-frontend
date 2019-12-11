@@ -1,97 +1,112 @@
-import React, { useContext, useEffect, useReducer, useCallback } from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
+import MaterialList from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import ConversationListItem from './ConversationListItem';
-import { CurrentUserContext } from '../CurrentUserContext';
-import { Redirect } from 'react-router-dom';
-import { getUsersConversations } from '../../Api';
-import { SocketContext } from '../SocketContext';
-import socketActions from '../../socketActions';
-import { actionTypes, reducer } from './reducer';
+import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
+import { ConversationsListContext } from './ConversationsListContext';
+
+/*
+
+Todo:
+
+- incorporate List
+- construct rowRenderer function
+- construct CellMeasurerCache instance
+- create context for sharing item data
+- rework ConversationListItem to use the context to access data, and to use 
+CellMeasurer to measure itself.
+
+
+*/
 
 const useStyles = makeStyles(theme => ({
     heading: {
-        marginTop: theme.spacing(4),
-        marginBottom: theme.spacing(2)
+        //marginTop: theme.spacing(4),
+        //marginBottom: theme.spacing(2)
     },
-    snackbar: {
-        bottom: 96
+    titleContainer: {
+        height: 80,
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: 56,
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        [theme.breakpoints.up('sm')]: {
+            marginTop: 64,
+            paddingLeft: theme.spacing(3),
+            paddingRight: theme.spacing(3)
+        }
+    },
+    listContainer: {
+        height: 'calc(100vh - 136px)',
+        [theme.breakpoints.up('sm')]: {
+            height: 'calc(100vh - 144px)'
+        }
     }
 }));
 
-const ConversationsList = (props) => {
+const rowRenderer = ({ key, index, isScrolling, isVisible, style, parent }) => {
+    return (
+        <ConversationListItem index={index} style={style} key={key} parent={parent} />
+    );
+}
 
-    const { heading, snackbar } = useStyles();
-    const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
-    const { emit, on } = useContext(SocketContext);
-    const [ conversations, dispatch ] = useReducer(reducer, []);
+const cache = new CellMeasurerCache({
+    defaultHeight: 120,
+    fixedWidth: true
+});
 
-    const storeConversations = useCallback((conversations) => {
-        dispatch({
-            type: actionTypes.storeConversations,
-            payload: { conversations, currentUserId }
-        });
-    }, [ isSignedIn, currentUserId ]);
+const ConversationsList = ({ conversations }) => {
 
-    const storeOneConversation = useCallback((conversation) => {
-        dispatch({
-            type: actionTypes.storeOneConversation,
-            payload: { conversation, currentUserId }
-        });
-    }, [ isSignedIn, currentUserId ]);
+    const { heading, titleContainer, listContainer } = useStyles();
 
-    const updateConversationActivity = useCallback((conversationId, latestActivity) => {
-        dispatch({
-            type: actionTypes.updateConversationActivity,
-            payload: { conversationId, latestActivity, currentUserId }
-        });
-    }, [ isSignedIn, currentUserId ])
-
+    const conversationsListRef = useRef(null);
     
+    console.log(conversations);
+    return (
+        <ConversationsListContext.Provider value={{ conversations, cache }}>
+            <div className={titleContainer}>
+                <Typography 
+                    className={heading} 
+                    color="textPrimary" 
+                    component="h1" 
+                    variant="h4"
+                >Conversations</Typography>
+            </div>
+            <div className={listContainer}>
+                {/* <MaterialList> */}
+                    <AutoSizer>
+                        {({ width, height }) => (
+                            <List 
+                                ref={conversationsListRef}
+                                width={width}
+                                height={height}
+                                rowCount={conversations.length}
+                                rowHeight={cache.rowHeight}
+                                rowRenderer={rowRenderer}
+                                deferredMeasurementCache={cache}
+                                estimatedRowSize={120}
+                            />
+                        )}
+                    </AutoSizer>
+                {/* </MaterialList> */}
+            </div>
+        </ConversationsListContext.Provider>
+    );
+}
 
-    useEffect(() => {
-        if (isSignedIn) {
-            emit(socketActions.getCurrentUsersConversationsRequest);
-            const off = on(socketActions.getCurrentUsersConversationsResponse, data => {
-                console.log(data);
-                const { conversations } = data;
-                storeConversations(conversations);
-            });
-            return off;
-        }  
-    }, [ isSignedIn, currentUserId ]);
+ConversationsList.propTypes = {
+    conversations: PropTypes.arrayOf(PropTypes.object).isRequired
+};
 
-    useEffect(() => {
-        if (isSignedIn) {
-            const off = on(socketActions.pushConversation, data => {
-                console.log(data);
-                const { conversation } = data;
-                storeOneConversation(conversation);
-            });
-            return off;
-        }
-    }, [ isSignedIn, currentUserId ]);
+export default ConversationsList;
 
-    useEffect(() => {
-        if (isSignedIn) {
-            const off = on(socketActions.pushMessage, data => {
-                const { message, conversationId } = data;
-                console.log(data);
-                updateConversationActivity(conversationId, message.createdAt)
-            });
-            return off;
-        }
-    }, [ isSignedIn, currentUserId ])
 
-    return !isSignedIn ? (
-        <Redirect to="/sign-in" />
-    ) : (
-        <>
-            <Typography className={heading} color="textPrimary" component="h1" variant="h4">Conversations</Typography>
-            <List>
-                {conversations.map(conversation => (
+/*
+
+{conversations.map(conversation => (
                     <ConversationListItem 
                         key={conversation._id}
                         id={conversation._id} 
@@ -100,9 +115,6 @@ const ConversationsList = (props) => {
                         hasUnreadMessages={conversation.hasUnreadMessages}
                     />
                 ))}
-            </List>
-        </>
-    );
-}
 
-export default ConversationsList;
+
+*/

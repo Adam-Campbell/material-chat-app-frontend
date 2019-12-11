@@ -34,12 +34,10 @@ const App = () => {
                         </CenteredContainer>
                     </Route>
                     <Route path="/conversations">
-                        <CenteredContainer>
-                            <ConversationsList />
-                        </CenteredContainer>
+                        <ConversationsList />
                     </Route>
                     <Route path="/conversation/:id">
-                            <Conversation />
+                        <Conversation />
                     </Route>
                     <Route path="/">
                         <Redirect to={isSignedIn ? '/conversations' : '/sign-in'} />
