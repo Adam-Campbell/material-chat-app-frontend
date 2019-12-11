@@ -2,31 +2,25 @@ export const actionTypes = {
     fetchConversation: 'fetchConversation',
     storeConversation: 'storeConversation',
     addMessage: 'addMessage',
-    updateLastViewed: 'updateLastViewed'
+    updateLastViewed: 'updateLastViewed',
+    showSnackbar: 'showSnackbar',
+    hideSnackbar: 'hideSnackbar'
 };
 
+const updateLastViewed = (lastViewedArray, userId, timestamp) => {
+    return lastViewedArray.map(lv => {
+        return lv.user._id === userId ? ({
+            ...lv,
+            lastViewed: timestamp
+        }) : lv
+    });
+}
 
 export const initialState = {
     isLoading: false,
-    conversation: null
+    conversation: null,
+    isShowingSnackbar: false
 }
-
-const formatMessage = (message, currentUserId) => ({
-    ...message, 
-    isOwnMessage: message.author._id === currentUserId
-});
-
-const formatMessages = (messages, currentUserId) => {
-    return messages.map(message => formatMessage(message, currentUserId));
-}
-
-const updateLastViewedArr = (lastViewedArr, userId, timestamp) => {
-    return lastViewedArr.map(record => userId === record.user._id ? {
-        ...record,
-        lastViewed: timestamp
-    } : record);
-}
-
 
 export const reducer = (state, action) => {
     switch (action.type) {
@@ -39,13 +33,10 @@ export const reducer = (state, action) => {
 
         case actionTypes.storeConversation:
             return {
+                ...state,
                 isLoading: false,
                 conversation: {
                     ...action.payload.conversation,
-                    messages: formatMessages(
-                        action.payload.conversation.messages, 
-                        action.payload.currentUserId
-                    )
                 }
             }
 
@@ -56,10 +47,7 @@ export const reducer = (state, action) => {
                     ...state.conversation,
                     messages: [
                         ...state.conversation.messages,
-                        formatMessage(
-                            action.payload.message,
-                            action.payload.currentUserId
-                        )
+                        action.payload.message
                     ]
                 }
             } : state;
@@ -69,9 +57,26 @@ export const reducer = (state, action) => {
                 ...state,
                 conversation: {
                     ...state.conversation,
-                    participantsLastViewed: action.payload.lastViewed
+                    //participantsLastViewed: action.payload.lastViewed
+                    participantsLastViewed: updateLastViewed(
+                        state.conversation.participantsLastViewed,
+                        action.payload.userId,
+                        action.payload.timestamp
+                    )
                 }
             } : state;
+
+        case actionTypes.showSnackbar:
+            return {
+                ...state,
+                isShowingSnackbar: true
+            };
+
+        case actionTypes.hideSnackbar:
+            return {
+                ...state,
+                isShowingSnackbar: false
+            };
 
         default:
             return state;

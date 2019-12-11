@@ -9,11 +9,20 @@ import socketActions from '../../socketActions';
 
 const useStyles = makeStyles(theme => ({
     styledForm: {
-        marginTop: 'auto',
+        position: 'fixed',
+        left: 0,
+        bottom: 0,
+        width: '100%',
+        //marginTop: 'auto',
         //border: 'solid blue 1px',
+        //borderTop: 'solid 1px #e0e0e0',
+        height: 90,
         display: 'flex',
-        paddingTop: theme.spacing(2),
-        paddingBottom: theme.spacing(2)
+        padding: theme.spacing(2),
+        [theme.breakpoints.up('sm')]: {
+            paddingLeft: theme.spacing(3),
+            paddingRight: theme.spacing(3)
+        }
     },
     messageInput: {
         flexGrow: 1,
@@ -45,7 +54,6 @@ const AddMessageForm = ({ conversationId }) => {
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 variant="outlined"
-                multiline={true}
             />
             <Button 
                 type="submit" 

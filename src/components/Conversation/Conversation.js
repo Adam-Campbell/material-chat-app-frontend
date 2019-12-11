@@ -1,49 +1,132 @@
-import React, { useMemo, useContext } from 'react';
+import React, { useContext, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Message from './Message';
 import AddMessageForm from './AddMessageForm';
 import { CurrentUserContext } from '../CurrentUserContext';
+import { ConversationContext } from './ConversationContext';
+import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
+import NewMessagesSnackbar from './NewMessagesSnackbar';
 
 const useStyles = makeStyles(theme => ({
-    messageStreamContainer: {
-        display: 'flex',
-        flexDirection: 'column'
+    conversationContainer: {
+        marginTop: 56,
+        height: 'calc(100vh - 146px)',
+        [theme.breakpoints.up('sm')]: {
+            marginTop: 64,
+            height: 'calc(100vh - 154px)'
+        }
     }
 }));
 
-const Conversation = ({ conversation }) => {
+const rowRenderer = ({ key, index, isScrolling, isVisible, style, parent }) => {
+    return (
+        <Message index={index} style={style} key={key} parent={parent} />
+    );
+}
 
-    const { messageStreamContainer } = useStyles();
+const cache = new CellMeasurerCache({
+    defaultHeight: 200,
+    fixedWidth: true
+});
 
+
+const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnackbar }) => {
+
+    const { conversationContainer } = useStyles();
+    
     const { currentUserId } = useContext(CurrentUserContext);
 
-    const otherParticipantsLastViewed = useMemo(() => {
-        return conversation.participantsLastViewed.filter(plv => plv.user._id !== currentUserId)
-        .map(plv => ({
-            lastViewed: plv.lastViewed,
-            username: plv.user.username
-        }))
-    }, [ conversation.participantsLastViewed, currentUserId ]);
+    const messagesListRef = useRef(null);
+    const isInitialMount = useRef(true);
+    const visibleSliceEnd = useRef(0);
+    const previousLastViewed = useRef([]);
+
+    const forceRecompute = useCallback((startIdx = 0) => {
+        if (messagesListRef.current) {
+            messagesListRef.current.recomputeRowHeights(startIdx);
+        }
+    }, []);
+
+    const scrollToRow = useCallback((rowNumber = 0) => {
+        if (messagesListRef.current) {
+            messagesListRef.current.scrollToRow(rowNumber);
+        }
+    }, []);
+
+    const handleSnackbarActionClick = useCallback(() => {
+        forceRecompute(0);
+        setTimeout(() => {
+            scrollToRow(conversation.messages.length - 1);
+        }, 0);
+        hideSnackbar();
+    }, [ forceRecompute, scrollToRow, hideSnackbar, conversation.messages.length ]);
+
+    const updateVisibleSliceOnRowsRendered = useCallback(({ stopIndex }) => {
+        visibleSliceEnd.current = stopIndex;
+    }, []);
+
+    // Runs every time the length of conversation.messages array changes (every time a new) 
+    // message is received) but does not run on initial render. Either scrolls down to the 
+    // bottom of the conversation or triggers an alert depending on which part of the
+    // conversation is currently being rendered. 
+    useEffect(() => {
+        if (isInitialMount.current) return;
+        const len = conversation.messages.length;
+        if (visibleSliceEnd.current >= len - 2) {
+            forceRecompute(len - 1);
+            setTimeout(() => {
+                scrollToRow(len - 1);
+            }, 0)     
+        } else {
+            //console.log('A new message arrived!');
+            showSnackbar();
+        }
+    
+    }, [ conversation.messages.length, isInitialMount, visibleSliceEnd ]);
+
+    // Runs only on initial render, responsible for scrolling down to the bottom of the 
+    // conversation (the most recent message).
+    useEffect(() => {
+        if (isInitialMount.current) {
+            window.listRef = messagesListRef.current;
+            forceRecompute(0);
+            setTimeout(() => {
+                scrollToRow(conversation.messages.length - 1);
+            }, 0)
+            isInitialMount.current = false;
+        }
+    }, [ conversation.messages.length, isInitialMount ]);
     
     return (
-        <>
-            <div className={messageStreamContainer}>
-                {conversation.messages.map((msg, idx, arr) => (
-                    <Message 
-                        key={msg._id} 
-                        text={msg.body} 
-                        isOwnMessage={msg.isOwnMessage} 
-                        username={msg.author.username}
-                        createdAt={msg.createdAt}
-                        previousCreatedAt={idx > 0 ? arr[idx-1].createdAt : null}
-                        otherParticipantsLastViewed={otherParticipantsLastViewed}
-                    />
-                ))}
-            </div>
-            <AddMessageForm 
-                conversationId={conversation._id}
-            />
+        <>  
+            <ConversationContext.Provider value={{ conversation, cache }}>
+                <div className={conversationContainer}>
+                    <AutoSizer onResize={() => cache.clearAll()}>
+                        {({ width, height }) => (
+                            <List 
+                                ref={messagesListRef}
+                                width={width}
+                                height={height}
+                                rowCount={conversation.messages.length}
+                                rowHeight={cache.rowHeight}
+                                rowRenderer={rowRenderer}
+                                deferredMeasurementCache={cache}
+                                estimatedRowSize={200}
+                                onRowsRendered={updateVisibleSliceOnRowsRendered}
+                            />
+                        )}
+                    </AutoSizer>
+                </div>
+                <AddMessageForm 
+                    conversationId={conversation._id}
+                />
+                <NewMessagesSnackbar 
+                    isOpen={isShowingSnackbar}
+                    handleClose={hideSnackbar}
+                    handleActionClick={handleSnackbarActionClick}
+                />
+            </ConversationContext.Provider>
         </>
     );
 }
@@ -58,13 +141,15 @@ Conversation.propTypes = {
                 _id: PropTypes.string.isRequired
             }).isRequired,
             body: PropTypes.string.isRequired,
-            isOwnMessage: PropTypes.bool.isRequired
         })).isRequired,
         participants: PropTypes.arrayOf(PropTypes.shape({
             _id: PropTypes.string.isRequired,
             username: PropTypes.string.isRequired
         })).isRequired
-    }).isRequired
+    }).isRequired,
+    isShowingSnackbar: PropTypes.bool.isRequired,
+    showSnackbar: PropTypes.func.isRequired,
+    hideSnackbar: PropTypes.func.isRequired
 };
 
 export default Conversation;

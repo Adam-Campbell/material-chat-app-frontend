@@ -15,12 +15,15 @@ const useStyles = makeStyles(theme => ({
     heading: {
         marginTop: theme.spacing(4),
         marginBottom: theme.spacing(2)
+    },
+    snackbar: {
+        bottom: 96
     }
 }));
 
 const ConversationsList = (props) => {
 
-    const { heading } = useStyles();
+    const { heading, snackbar } = useStyles();
     const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
     const { emit, on } = useContext(SocketContext);
     const [ conversations, dispatch ] = useReducer(reducer, []);

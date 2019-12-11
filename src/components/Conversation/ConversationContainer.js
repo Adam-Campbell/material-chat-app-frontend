@@ -8,7 +8,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import { Redirect } from 'react-router-dom';
 import socketActions from '../../socketActions';
 import { actionTypes, initialState, reducer } from './reducer';
-
+import { ConversationContext } from './ConversationContext';
 
 const ConversationContainer = () => {
 
@@ -16,6 +16,14 @@ const ConversationContainer = () => {
     const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
     const [ state, dispatch ] = useReducer(reducer, initialState);
     const { emit, on } = useContext(SocketContext);
+
+    const showSnackbar = useCallback(() => {
+        dispatch({ type: actionTypes.showSnackbar });
+    }, []);
+
+    const hideSnackbar = useCallback(() => {
+        dispatch({ type: actionTypes.hideSnackbar });
+    }, []);
 
     // Fetch the conversation once ready
     useEffect(() => {
@@ -29,32 +37,28 @@ const ConversationContainer = () => {
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.getConversationResponse, ({ conversation }) => {
-                console.log(conversation);
                 dispatch({
                     type: actionTypes.storeConversation,
-                    payload: { 
-                        conversation,
-                        currentUserId
-                    }
+                    payload: { conversation }
                 });
                 const timestamp = conversation.latestActivity;
                 emit(socketActions.sendLastViewed, { conversationId: id, timestamp });
             });
             return off;
         }
-    }, [ isSignedIn, id, currentUserId ]);
+    }, [ isSignedIn, id ]);
 
     // Set up subscription to react to lastViewed status being pushed to client
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.pushLastViewed, data => {
-                console.log(data);
-                const { lastViewed, conversationId } = data;
+                const { timestamp, userId, conversationId } = data;
                 dispatch({
                     type: actionTypes.updateLastViewed,
                     payload: {
+                        timestamp,
+                        userId,
                         conversationId,
-                        lastViewed, 
                         currentConversationId: id
                     }
                 });
@@ -67,14 +71,14 @@ const ConversationContainer = () => {
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.pushMessage, data => {
+                console.log('pushMessage event received from server');
                 const { message, conversationId } = data;
                 dispatch({
                     type: actionTypes.addMessage,
                     payload: {
                         conversationId,
                         currentConversationId: id, 
-                        message,
-                        currentUserId
+                        message
                     }
                 });
                 const timestamp = message.createdAt;
@@ -82,16 +86,21 @@ const ConversationContainer = () => {
             });
             return off;
         }
-    }, [ isSignedIn, id, currentUserId ]);
+    }, [ isSignedIn, id ]);
 
     if (!isSignedIn) {
         return <Redirect to="/sign-in" />
     } else if (state.isLoading || !state.conversation) {
         return <LoadingSpinner />
     } else {
-        return <Conversation
-            conversation={state.conversation}
-        />
+        return (
+            <Conversation
+                conversation={state.conversation}
+                isShowingSnackbar={state.isShowingSnackbar}
+                showSnackbar={showSnackbar}
+                hideSnackbar={hideSnackbar}
+            />
+        );
     }
     
 }
