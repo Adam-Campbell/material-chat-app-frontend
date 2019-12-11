@@ -17,6 +17,14 @@ const ConversationContainer = () => {
     const [ state, dispatch ] = useReducer(reducer, initialState);
     const { emit, on } = useContext(SocketContext);
 
+    const showSnackbar = useCallback(() => {
+        dispatch({ type: actionTypes.showSnackbar });
+    }, []);
+
+    const hideSnackbar = useCallback(() => {
+        dispatch({ type: actionTypes.hideSnackbar });
+    }, []);
+
     // Fetch the conversation once ready
     useEffect(() => {
         if (isSignedIn) {
@@ -29,7 +37,6 @@ const ConversationContainer = () => {
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.getConversationResponse, ({ conversation }) => {
-                console.log(conversation);
                 dispatch({
                     type: actionTypes.storeConversation,
                     payload: { conversation }
@@ -45,13 +52,13 @@ const ConversationContainer = () => {
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.pushLastViewed, data => {
-                //console.log(data);
-                const { lastViewed, conversationId } = data;
+                const { timestamp, userId, conversationId } = data;
                 dispatch({
                     type: actionTypes.updateLastViewed,
                     payload: {
+                        timestamp,
+                        userId,
                         conversationId,
-                        lastViewed, 
                         currentConversationId: id
                     }
                 });
@@ -64,6 +71,7 @@ const ConversationContainer = () => {
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.pushMessage, data => {
+                console.log('pushMessage event received from server');
                 const { message, conversationId } = data;
                 dispatch({
                     type: actionTypes.addMessage,
@@ -88,6 +96,9 @@ const ConversationContainer = () => {
         return (
             <Conversation
                 conversation={state.conversation}
+                isShowingSnackbar={state.isShowingSnackbar}
+                showSnackbar={showSnackbar}
+                hideSnackbar={hideSnackbar}
             />
         );
     }

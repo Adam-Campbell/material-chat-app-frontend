@@ -1,4 +1,4 @@
-import React, { useMemo, useContext, useRef, useEffect } from 'react';
+import React, { useContext, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Message from './Message';
@@ -6,34 +6,9 @@ import AddMessageForm from './AddMessageForm';
 import { CurrentUserContext } from '../CurrentUserContext';
 import { ConversationContext } from './ConversationContext';
 import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
-import Container from '@material-ui/core/Container'
-
-
-/*
-
-Bug to fix:
-
-When the seen-by text beneath the messages updates (gets added to or removed from a message)
-the actual height that the Grid assumes for that message does not update. There should be a way
-to force the Grid to update and the sizes to update accordingly. Have already tried to use the
-forceUpdateGrid method but it doesn't seem to be working, perhaps I am not using it correctly. 
-
-In the very worst case I can simply update the styling such that the space that would be 
-occupied by the seen-by text will still be used up whether the text is there or not. This would
-fix it for all cases except the case where the seen-by text goes onto a second line, which should
-only happen very rarely. 
-
-
-
-*/
-
+import NewMessagesSnackbar from './NewMessagesSnackbar';
 
 const useStyles = makeStyles(theme => ({
-    messageStreamContainer: {
-        // display: 'flex',
-        // flexDirection: 'column'
-        height: 'calc(100vh - 184px)'
-    },
     conversationContainer: {
         marginTop: 56,
         height: 'calc(100vh - 146px)',
@@ -55,26 +30,10 @@ const cache = new CellMeasurerCache({
     fixedWidth: true
 });
 
-const compareLastViewed = (lastViewed, previousLastViewed, currentUserId) => {
-    //console.log(lastViewed, previousLastViewed);
-    const filteredNew = lastViewed.filter(el => el.user._id !== currentUserId);
-    const filteredOld = previousLastViewed.filter(el => el.user._id !== currentUserId);
-    //console.log(filteredNew, filteredOld);
-    let hasChanged = false;
-    for (let lvObject of filteredNew) {
-        const counterpart = filteredOld.find(oldLvObject => oldLvObject.user._id === lvObject.user._id);
-        //console.log('counterpart: ', counterpart);
-        if (!counterpart || lvObject.lastViewed !== counterpart.lastViewed) {
-            hasChanged = true;
-            break;
-        }
-    }
-    return hasChanged;
-}
 
-const Conversation = ({ conversation }) => {
+const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnackbar }) => {
 
-    const { messageStreamContainer, conversationContainer } = useStyles();
+    const { conversationContainer } = useStyles();
     
     const { currentUserId } = useContext(CurrentUserContext);
 
@@ -83,29 +42,34 @@ const Conversation = ({ conversation }) => {
     const visibleSliceEnd = useRef(0);
     const previousLastViewed = useRef([]);
 
-    const forceRecompute = (startIdx = 0) => {
+    const forceRecompute = useCallback((startIdx = 0) => {
         if (messagesListRef.current) {
             messagesListRef.current.recomputeRowHeights(startIdx);
         }
-    };
+    }, []);
 
-    const forceUpdateGrid = () => {
-        if (messagesListRef.current) {
-            messagesListRef.current.forceUpdateGrid();
-        }
-    }
-
-    const scrollToRow = (rowNumber = 0) => {
+    const scrollToRow = useCallback((rowNumber = 0) => {
         if (messagesListRef.current) {
             messagesListRef.current.scrollToRow(rowNumber);
         }
-    };
+    }, []);
 
-    const handleRowsRendered = ({ stopIndex }) => {
+    const handleSnackbarActionClick = useCallback(() => {
+        forceRecompute(0);
+        setTimeout(() => {
+            scrollToRow(conversation.messages.length - 1);
+        }, 0);
+        hideSnackbar();
+    }, [ forceRecompute, scrollToRow, hideSnackbar, conversation.messages.length ]);
+
+    const updateVisibleSliceOnRowsRendered = useCallback(({ stopIndex }) => {
         visibleSliceEnd.current = stopIndex;
-        console.log(stopIndex);
-    } 
+    }, []);
 
+    // Runs every time the length of conversation.messages array changes (every time a new) 
+    // message is received) but does not run on initial render. Either scrolls down to the 
+    // bottom of the conversation or triggers an alert depending on which part of the
+    // conversation is currently being rendered. 
     useEffect(() => {
         if (isInitialMount.current) return;
         const len = conversation.messages.length;
@@ -115,28 +79,14 @@ const Conversation = ({ conversation }) => {
                 scrollToRow(len - 1);
             }, 0)     
         } else {
-            console.log('A new message arrived!');
+            //console.log('A new message arrived!');
+            showSnackbar();
         }
     
     }, [ conversation.messages.length, isInitialMount, visibleSliceEnd ]);
 
-    useEffect(() => {
-        if (isInitialMount.current) return;
-        const hasChanged = compareLastViewed(
-            conversation.participantsLastViewed,
-            previousLastViewed.current,
-            currentUserId
-        );
-        previousLastViewed.current = conversation.participantsLastViewed;
-        if (hasChanged) {
-            console.log('We actually made it into the condition')
-            forceUpdateGrid();
-            setTimeout(() => {
-                //forceRecompute();
-            }, 0);
-        }
-    }, [ conversation.participantsLastViewed, isInitialMount, currentUserId ]);
-
+    // Runs only on initial render, responsible for scrolling down to the bottom of the 
+    // conversation (the most recent message).
     useEffect(() => {
         if (isInitialMount.current) {
             window.listRef = messagesListRef.current;
@@ -152,7 +102,7 @@ const Conversation = ({ conversation }) => {
         <>  
             <ConversationContext.Provider value={{ conversation, cache }}>
                 <div className={conversationContainer}>
-                    <AutoSizer>
+                    <AutoSizer onResize={() => cache.clearAll()}>
                         {({ width, height }) => (
                             <List 
                                 ref={messagesListRef}
@@ -163,7 +113,7 @@ const Conversation = ({ conversation }) => {
                                 rowRenderer={rowRenderer}
                                 deferredMeasurementCache={cache}
                                 estimatedRowSize={200}
-                                onRowsRendered={handleRowsRendered}
+                                onRowsRendered={updateVisibleSliceOnRowsRendered}
                             />
                         )}
                     </AutoSizer>
@@ -171,27 +121,15 @@ const Conversation = ({ conversation }) => {
                 <AddMessageForm 
                     conversationId={conversation._id}
                 />
+                <NewMessagesSnackbar 
+                    isOpen={isShowingSnackbar}
+                    handleClose={hideSnackbar}
+                    handleActionClick={handleSnackbarActionClick}
+                />
             </ConversationContext.Provider>
         </>
     );
 }
-
-/*
-
-{conversation.messages.map((msg, idx, arr) => (
-                    <Message 
-                        key={msg._id} 
-                        text={msg.body} 
-                        author={msg.author}
-                        username={msg.author.username}
-                        createdAt={msg.createdAt}
-                        previousCreatedAt={idx > 0 ? arr[idx-1].createdAt : null}
-                        otherParticipantsLastViewed={otherParticipantsLastViewed}
-                    />
-                ))}
-
-
-*/
 
 Conversation.propTypes = {
     conversation: PropTypes.shape({
@@ -208,7 +146,10 @@ Conversation.propTypes = {
             _id: PropTypes.string.isRequired,
             username: PropTypes.string.isRequired
         })).isRequired
-    }).isRequired
+    }).isRequired,
+    isShowingSnackbar: PropTypes.bool.isRequired,
+    showSnackbar: PropTypes.func.isRequired,
+    hideSnackbar: PropTypes.func.isRequired
 };
 
 export default Conversation;

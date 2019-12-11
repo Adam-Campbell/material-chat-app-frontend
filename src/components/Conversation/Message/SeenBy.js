@@ -6,7 +6,8 @@ import Typography from '@material-ui/core/Typography';
 const useStyles = makeStyles(theme => ({
     statusContainer: {
         marginLeft: ({ isOwnMessage }) => isOwnMessage ? 'auto' : 0,
-        marginRight: ({ isOwnMessage }) => isOwnMessage ? 0 : 'auto'
+        marginRight: ({ isOwnMessage }) => isOwnMessage ? 0 : 'auto',
+        minHeight: 24,
     },
     statusText: {
         fontSize: 14
@@ -55,7 +56,7 @@ const SeenBy = ({ participantsLastViewed, currentUserId, createdAt, isOwnMessage
                 color="textSecondary"
             >{seenByString}</Typography>
         </div>
-    ) : null;
+    ) : <span className={statusContainer}></span>;
 };
 
 SeenBy.propTypes = {

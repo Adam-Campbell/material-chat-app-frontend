@@ -58,7 +58,7 @@ export const CurrentUserContextProvider = ({ children }) => {
                 const response = await checkForSession();
                 const { hasSession, user, socketToken } = response.data;
                 if (hasSession) {
-                    console.log(socketToken);
+                    //console.log(socketToken);
                     connect(socketToken, () => {
                         storeUser(user.username, user._id);
                     });
@@ -66,7 +66,7 @@ export const CurrentUserContextProvider = ({ children }) => {
                     clearUser();
                 }
             } catch (error) {
-                console.log(error);
+                //console.log(error);
             }
         })();
     }, []);

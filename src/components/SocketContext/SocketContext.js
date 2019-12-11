@@ -29,7 +29,7 @@ export const SocketContextProvider = ({ children }) => {
         socket.on('connect', () => {
             socket.emit('authenticate', { token })
             .on('authenticated', () => {
-                console.log('Client is authenticated!');
+                //console.log('Client is authenticated!');
                 socketRef.current = socket;
                 if (cb) {
                     cb();
@@ -45,12 +45,12 @@ export const SocketContextProvider = ({ children }) => {
     }, []);
 
     const emit = useCallback((evtName, ...args) => {
-        console.log('emit was called');
+        //console.log('emit was called');
         if (!socketRef.current) {
-            console.log('there was no socket ref')
+            //console.log('there was no socket ref')
             return;
         }
-        console.log('there was a socket ref');
+        //console.log('there was a socket ref');
         socketRef.current.emit(evtName, ...args);
     }, []);
 
