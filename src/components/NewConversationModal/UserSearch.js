@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from '@material-ui/core/TextField';
-import Chip from '@material-ui/core/Chip';
-import { searchUsers } from '../../Api';
 import { SocketContext } from '../SocketContext';
 import socketActions from '../../socketActions';
 
@@ -27,6 +25,14 @@ const UserSearch = ({ value, setValue }) => {
 
     const { emit, on } = useContext(SocketContext);
 
+    // Make new request for users data when inputValue changes
+    useEffect(() => {
+        if (inputValue) {
+            emit(socketActions.getUsersRequest, { query: inputValue });
+        }
+    }, [ inputValue, emit ]);
+
+    // Set up subscription to react to new users data being pushed to the client
     useEffect(() => {
         const off = on(socketActions.getUsersResponse, data => {
             const { users } = data;
@@ -34,13 +40,9 @@ const UserSearch = ({ value, setValue }) => {
             setIsLoading(false);
         });
         return off;
-    }, []);
+    }, [ on ]);
 
-    useEffect(() => {
-        if (inputValue) {
-            emit(socketActions.getUsersRequest, { query: inputValue });
-        }
-    }, [ inputValue ]);
+    
 
     return (
         <Autocomplete
@@ -65,5 +67,10 @@ const UserSearch = ({ value, setValue }) => {
         />
     );
 }
+
+UserSearch.propTypes = {
+    value: PropTypes.arrayOf(PropTypes.object).isRequired,
+    setValue: PropTypes.func.isRequired
+};
 
 export default UserSearch;

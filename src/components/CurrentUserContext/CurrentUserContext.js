@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useCallback, useContext } from 'react';
+import React, { useReducer, useEffect, useCallback, useContext, useRef } from 'react';
 import { checkForSession } from '../../Api';
 import { SocketContext } from '../SocketContext';
 
@@ -35,7 +35,7 @@ const reducer = (state, action) => {
 export const CurrentUserContextProvider = ({ children }) => {
 
     const [ state, dispatch ] = useReducer(reducer, initialState);
-
+    const isInitialRender = useRef(true);
     const { connect } = useContext(SocketContext);
 
     const storeUser = useCallback((currentUserName, currentUserId) => {
@@ -53,23 +53,25 @@ export const CurrentUserContextProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        (async () => {
-            try {
-                const response = await checkForSession();
-                const { hasSession, user, socketToken } = response.data;
-                if (hasSession) {
-                    //console.log(socketToken);
-                    connect(socketToken, () => {
-                        storeUser(user.username, user._id);
-                    });
-                } else {
-                    clearUser();
+        if (isInitialRender.current) {
+            (async () => {
+                isInitialRender.current = false;
+                try {
+                    const response = await checkForSession();
+                    const { hasSession, user, socketToken } = response.data;
+                    if (hasSession) {
+                        connect(socketToken, () => {
+                            storeUser(user.username, user._id);
+                        });
+                    } else {
+                        clearUser();
+                    }
+                } catch (error) {
+                    console.log(error);
                 }
-            } catch (error) {
-                //console.log(error);
-            }
-        })();
-    }, []);
+            })();
+        }
+    }, [ connect, clearUser, storeUser, isInitialRender ]);
 
     return (
         <CurrentUserContext.Provider value={{

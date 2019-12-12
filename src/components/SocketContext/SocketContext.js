@@ -1,21 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import io from 'socket.io-client';
 
-// should expose a socket property that is either the current socketio socket, or null if
-// there  
-// should expose a connect property that
-
-/*
-
-socket - either the current socketio socket, or null if there is no current socket. 
-connect() - create a new socket and connect it.
-disconnect() - disconnect the current socket. 
-
-
-
-
-*/
-
 export const SocketContext = React.createContext();
 
 export const SocketContextProvider = ({ children }) => {
@@ -29,7 +14,6 @@ export const SocketContextProvider = ({ children }) => {
         socket.on('connect', () => {
             socket.emit('authenticate', { token })
             .on('authenticated', () => {
-                //console.log('Client is authenticated!');
                 socketRef.current = socket;
                 if (cb) {
                     cb();
@@ -45,12 +29,9 @@ export const SocketContextProvider = ({ children }) => {
     }, []);
 
     const emit = useCallback((evtName, ...args) => {
-        //console.log('emit was called');
         if (!socketRef.current) {
-            //console.log('there was no socket ref')
             return;
         }
-        //console.log('there was a socket ref');
         socketRef.current.emit(evtName, ...args);
     }, []);
 

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import { postMessage } from '../../Api';
 import { SocketContext } from '../SocketContext';
 import socketActions from '../../socketActions';
 
