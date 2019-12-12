@@ -5,10 +5,8 @@ import Modal from '@material-ui/core/Modal';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from '@material-ui/core/TextField';
 import UserSearch from './UserSearch';
-import { postConversation } from '../../Api';
 import { useHistory } from 'react-router-dom';
 import { SocketContext } from '../SocketContext';
 import socketActions from '../../socketActions';
@@ -50,7 +48,7 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
 
     const { modalPaper, formHeading, styledForm, styledInput, submitButton, cancelButton } = useStyles();
 
-    const history= useHistory();
+    const history = useHistory();
 
     const [ userSearchValue, setUserSearchValue ] = useState([]);
     const [ messageValue, setMessageValue ] = useState('');
@@ -77,13 +75,15 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
         }
     }
 
+    // Set up subscription to react to the sendConversation success message by
+    // redirecting to the conversation page.
     useEffect(() => {
         const off = on(socketActions.sendConversationSuccess, data => {
             const { conversationId } = data;
             history.push(`/conversation/${conversationId}`);
         });
         return off;
-    }, []);
+    }, [ history, on ]);
 
     return (
         <Modal open={isShowingModal} onClose={closeAndReset}>
@@ -110,5 +110,10 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
         </Modal>
     )
 }
+
+NewConversationModal.propTypes = {
+    isShowingModal: PropTypes.bool.isRequired,
+    closeModal: PropTypes.func.isRequired
+};
 
 export default NewConversationModal;

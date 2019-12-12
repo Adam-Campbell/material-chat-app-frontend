@@ -1,9 +1,8 @@
-import React, { useContext, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Message from './Message';
 import AddMessageForm from './AddMessageForm';
-import { CurrentUserContext } from '../CurrentUserContext';
 import { ConversationContext } from './ConversationContext';
 import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
 import AlertSnackbar from '../AlertSnackbar';
@@ -34,9 +33,6 @@ const cache = new CellMeasurerCache({
 const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnackbar }) => {
 
     const { conversationContainer } = useStyles();
-    
-    const { currentUserId } = useContext(CurrentUserContext);
-
     const messagesListRef = useRef(null);
     const isInitialMount = useRef(true);
     const visibleSliceEnd = useRef(0);
@@ -81,7 +77,7 @@ const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnack
             showSnackbar();
         }
     
-    }, [ conversation.messages.length, isInitialMount, visibleSliceEnd ]);
+    }, [ conversation.messages.length, isInitialMount, visibleSliceEnd, forceRecompute, scrollToRow, showSnackbar ]);
 
     // Runs only on initial render, responsible for scrolling down to the bottom of the 
     // conversation (the most recent message).
@@ -93,7 +89,7 @@ const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnack
             }, 0)
             isInitialMount.current = false;
         }
-    }, [ conversation.messages.length, isInitialMount ]);
+    }, [ conversation.messages.length, isInitialMount, forceRecompute, scrollToRow ]);
     
     return (
         <>  

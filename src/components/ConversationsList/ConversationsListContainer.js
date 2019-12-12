@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useReducer, useCallback } from 'react';
 import { CurrentUserContext } from '../CurrentUserContext';
 import { Redirect } from 'react-router-dom';
-import { getUsersConversations } from '../../Api';
 import { SocketContext } from '../SocketContext';
 import socketActions from '../../socketActions';
 import { actionTypes, reducer, initialState } from './reducer';
@@ -20,21 +19,21 @@ const ConversationsListContainer = (props) => {
             type: actionTypes.storeConversations,
             payload: { conversations, currentUserId }
         });
-    }, [ isSignedIn, currentUserId ]);
+    }, [ currentUserId ]);
 
     const storeOneConversation = useCallback((conversation) => {
         dispatch({
             type: actionTypes.storeOneConversation,
             payload: { conversation, currentUserId }
         });
-    }, [ isSignedIn, currentUserId ]);
+    }, [ currentUserId ]);
 
     const updateConversationActivity = useCallback((conversationId, latestActivity) => {
         dispatch({
             type: actionTypes.updateConversationActivity,
             payload: { conversationId, latestActivity, currentUserId }
         });
-    }, [ isSignedIn, currentUserId ]);
+    }, [ currentUserId ]);
 
     const showSnackbar = useCallback(() => {
         dispatch({ type: actionTypes.showSnackbar });
@@ -50,7 +49,7 @@ const ConversationsListContainer = (props) => {
             emit(socketActions.getCurrentUsersConversationsRequest);
             dispatch({ type: actionTypes.fetchConversations });
         }  
-    }, [ isSignedIn ]);
+    }, [ emit, isSignedIn ]);
 
     // Set up subscription to react to the conversations being pushed to the client.
     useEffect(() => {
@@ -61,7 +60,7 @@ const ConversationsListContainer = (props) => {
             });
             return off;
         }
-    }, [ isSignedIn ]);
+    }, [ isSignedIn, on, storeConversations ]);
 
     // Set up subscription to react to new conversations being pushed to the client.
     useEffect(() => {
@@ -72,7 +71,7 @@ const ConversationsListContainer = (props) => {
             });
             return off;
         }
-    }, [ isSignedIn ]);
+    }, [ isSignedIn, on, storeOneConversation ]);
 
     // Set up subscription to react to new messages being pushed to the client.
     useEffect(() => {
@@ -83,7 +82,7 @@ const ConversationsListContainer = (props) => {
             });
             return off;
         }
-    }, [ isSignedIn ]);
+    }, [ isSignedIn, on, updateConversationActivity ]);
 
     if (!isSignedIn) {
         return <Redirect to="/sign-in" />

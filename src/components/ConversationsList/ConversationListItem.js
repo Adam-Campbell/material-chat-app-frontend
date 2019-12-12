@@ -10,7 +10,6 @@ import { Link } from 'react-router-dom';
 import useHover from '../useHover';
 import { getInitials, getFormattedTimestamp } from '../../utils';
 import NewMessagesIcon from '@material-ui/icons/NewReleases';
-import EmailIcon from '@material-ui/icons/Email';
 import { ConversationsListContext } from './ConversationsListContext';
 import { CellMeasurer } from 'react-virtualized';
 
@@ -40,9 +39,6 @@ const useStyles = makeStyles(theme => ({
     participantsText: {
         marginLeft: 'auto'
     },
-    timestamp: {
-        marginLeft: 'auto'
-    },
     newMessagesIcon: {
         marginRight: theme.spacing(2)
     }
@@ -50,14 +46,16 @@ const useStyles = makeStyles(theme => ({
 
 const ConversationListItem = ({ index, style, parent }) => {
 
-    const { outerContainer, listItem, link, timestamp, participantsText, newMessagesIcon } = useStyles();
+    const { outerContainer, listItem, link, participantsText, newMessagesIcon } = useStyles();
     const { conversations, cache } = useContext(ConversationsListContext);
     const { otherParticipants, latestActivity, hasUnreadMessages, _id } = conversations[index];
     const { isHovered, containerProps } = useHover();
 
+    const firstParticipant = otherParticipants[0];
+
     const initials = useMemo(() => {
-        return getInitials( otherParticipants[0] );
-    }, [ otherParticipants[0] ]);
+        return getInitials(firstParticipant);
+    }, [ firstParticipant ]);
 
     const primaryText = useMemo(() => {
         return otherParticipants.slice(0,2).join(', ');
@@ -100,10 +98,6 @@ const ConversationListItem = ({ index, style, parent }) => {
 }
 
 ConversationListItem.propTypes = {
-    // otherParticipants: PropTypes.arrayOf(PropTypes.string).isRequired,
-    // id: PropTypes.string.isRequired,
-    // latestActivity: PropTypes.string.isRequired,
-    // hasUnreadMessages: PropTypes.bool.isRequired
     index: PropTypes.number.isRequired,
     style: PropTypes.object.isRequired,
     parent: PropTypes.any

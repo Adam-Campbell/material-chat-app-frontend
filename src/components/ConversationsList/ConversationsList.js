@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
-import MaterialList from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import ConversationListItem from './ConversationListItem';
 import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
@@ -75,7 +74,7 @@ const ConversationsList = ({ conversations, isShowingSnackbar, showSnackbar, hid
     useLayoutEffect(() => {
         cache.clearAll();
         forceRecompute();
-    }, [ conversations ]);
+    }, [ conversations, forceRecompute ]);
 
     // Shows the snackbar if a new message is received and the user is not already viewing
     // the start of the list. 

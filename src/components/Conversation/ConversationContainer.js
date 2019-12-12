@@ -1,19 +1,17 @@
-import React, { useState, useEffect, useCallback, useContext, useReducer } from 'react';
+import React, { useEffect, useCallback, useContext, useReducer } from 'react';
 import { useParams } from 'react-router-dom';
 import { CurrentUserContext } from '../CurrentUserContext';
 import { SocketContext } from '../SocketContext';
-import { getConversation } from '../../Api';
 import Conversation from './Conversation';
 import LoadingSpinner from '../LoadingSpinner';
 import { Redirect } from 'react-router-dom';
 import socketActions from '../../socketActions';
 import { actionTypes, initialState, reducer } from './reducer';
-import { ConversationContext } from './ConversationContext';
 
 const ConversationContainer = () => {
 
     const { id } = useParams();
-    const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
+    const { isSignedIn } = useContext(CurrentUserContext);
     const [ state, dispatch ] = useReducer(reducer, initialState);
     const { emit, on } = useContext(SocketContext);
 
@@ -31,7 +29,7 @@ const ConversationContainer = () => {
             emit(socketActions.getConversationRequest, { conversationId: id });
             dispatch({ type: actionTypes.fetchConversation })
         }
-    }, [ isSignedIn, id ]);
+    }, [ isSignedIn, id, emit ]);
 
     // Set up the subscription to react to the conversation being pushed to the client
     useEffect(() => {
@@ -46,7 +44,7 @@ const ConversationContainer = () => {
             });
             return off;
         }
-    }, [ isSignedIn, id ]);
+    }, [ isSignedIn, id, on, emit ]);
 
     // Set up subscription to react to lastViewed status being pushed to client
     useEffect(() => {
@@ -65,13 +63,12 @@ const ConversationContainer = () => {
             });
             return off;
         }
-    }, [ isSignedIn, id ]);
+    }, [ isSignedIn, id, on ]);
 
     // set up subscription to react to new message being pushed to client
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.pushMessage, data => {
-                console.log('pushMessage event received from server');
                 const { message, conversationId } = data;
                 dispatch({
                     type: actionTypes.addMessage,
@@ -86,7 +83,7 @@ const ConversationContainer = () => {
             });
             return off;
         }
-    }, [ isSignedIn, id ]);
+    }, [ isSignedIn, id, on, emit ]);
 
     if (!isSignedIn) {
         return <Redirect to="/sign-in" />
