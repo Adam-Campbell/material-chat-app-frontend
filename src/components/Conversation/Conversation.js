@@ -6,7 +6,7 @@ import AddMessageForm from './AddMessageForm';
 import { CurrentUserContext } from '../CurrentUserContext';
 import { ConversationContext } from './ConversationContext';
 import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
-import NewMessagesSnackbar from './NewMessagesSnackbar';
+import AlertSnackbar from '../AlertSnackbar';
 
 const useStyles = makeStyles(theme => ({
     conversationContainer: {
@@ -40,7 +40,6 @@ const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnack
     const messagesListRef = useRef(null);
     const isInitialMount = useRef(true);
     const visibleSliceEnd = useRef(0);
-    const previousLastViewed = useRef([]);
 
     const forceRecompute = useCallback((startIdx = 0) => {
         if (messagesListRef.current) {
@@ -79,7 +78,6 @@ const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnack
                 scrollToRow(len - 1);
             }, 0)     
         } else {
-            //console.log('A new message arrived!');
             showSnackbar();
         }
     
@@ -89,7 +87,6 @@ const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnack
     // conversation (the most recent message).
     useEffect(() => {
         if (isInitialMount.current) {
-            window.listRef = messagesListRef.current;
             forceRecompute(0);
             setTimeout(() => {
                 scrollToRow(conversation.messages.length - 1);
@@ -121,10 +118,12 @@ const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnack
                 <AddMessageForm 
                     conversationId={conversation._id}
                 />
-                <NewMessagesSnackbar 
+                <AlertSnackbar 
+                    message="View new message"
                     isOpen={isShowingSnackbar}
                     handleClose={hideSnackbar}
                     handleActionClick={handleSnackbarActionClick}
+                    bottomDistance={96}
                 />
             </ConversationContext.Provider>
         </>
