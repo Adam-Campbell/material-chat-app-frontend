@@ -8,7 +8,6 @@ import IconButton from '@material-ui/core/IconButton';
 import DownArrowIcon from '@material-ui/icons/ArrowDownward';
 import UpArrowIcon from '@material-ui/icons/ArrowUpward';
 
-// 96
 
 const useStyles = makeStyles(theme => ({
     snackbarContainer: {
