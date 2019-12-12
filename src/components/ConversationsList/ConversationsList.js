@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import MaterialList from '@material-ui/core/List';
@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import ConversationListItem from './ConversationListItem';
 import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
 import { ConversationsListContext } from './ConversationsListContext';
+import AlertSnackbar from '../AlertSnackbar';
 
 /*
 
@@ -58,13 +59,51 @@ const cache = new CellMeasurerCache({
     fixedWidth: true
 });
 
-const ConversationsList = ({ conversations }) => {
+const ConversationsList = ({ conversations, isShowingSnackbar, showSnackbar, hideSnackbar }) => {
 
     const { heading, titleContainer, listContainer } = useStyles();
 
     const conversationsListRef = useRef(null);
-    
-    console.log(conversations);
+    const visibleSliceStart = useRef(0);
+
+
+    const forceRecompute = useCallback((startIdx = 0) => {
+        if (conversationsListRef.current) {
+            conversationsListRef.current.recomputeRowHeights(startIdx);
+        }
+    }, []);
+
+    const scrollToRow = useCallback((rowNumber = 0) => {
+        if (conversationsListRef.current) {
+            conversationsListRef.current.scrollToRow(rowNumber);
+        }
+    }, []);
+
+    const updateVisibleSliceOnRowsRendered = useCallback(({ startIndex }) => {
+        visibleSliceStart.current = startIndex;
+    }, []);
+
+    const handleSnackbarActionClick = useCallback(() => {
+        forceRecompute();
+        scrollToRow(0);
+        hideSnackbar();
+    }, [ hideSnackbar, forceRecompute, scrollToRow, ]);
+
+    // Ensures that the row heights adjust when the underlying conversations data updates.
+    useLayoutEffect(() => {
+        cache.clearAll();
+        forceRecompute();
+    }, [ conversations ]);
+
+    // Shows the snackbar if a new message is received and the user is not already viewing
+    // the start of the list. 
+    useEffect(() => {
+        if (visibleSliceStart.current > 0) {
+            console.log('snackbar should appear');
+            showSnackbar();
+        }
+    }, [ conversations, visibleSliceStart, showSnackbar ]);
+
     return (
         <ConversationsListContext.Provider value={{ conversations, cache }}>
             <div className={titleContainer}>
@@ -76,29 +115,38 @@ const ConversationsList = ({ conversations }) => {
                 >Conversations</Typography>
             </div>
             <div className={listContainer}>
-                {/* <MaterialList> */}
-                    <AutoSizer>
-                        {({ width, height }) => (
-                            <List 
-                                ref={conversationsListRef}
-                                width={width}
-                                height={height}
-                                rowCount={conversations.length}
-                                rowHeight={cache.rowHeight}
-                                rowRenderer={rowRenderer}
-                                deferredMeasurementCache={cache}
-                                estimatedRowSize={120}
-                            />
-                        )}
-                    </AutoSizer>
-                {/* </MaterialList> */}
+                <AutoSizer>
+                    {({ width, height }) => (
+                        <List 
+                            ref={conversationsListRef}
+                            width={width}
+                            height={height}
+                            rowCount={conversations.length}
+                            rowHeight={cache.rowHeight}
+                            rowRenderer={rowRenderer}
+                            deferredMeasurementCache={cache}
+                            estimatedRowSize={120}
+                            onRowsRendered={updateVisibleSliceOnRowsRendered}
+                        />
+                    )}
+                </AutoSizer>
             </div>
+            <AlertSnackbar 
+                message="New message received"
+                isOpen={isShowingSnackbar}
+                handleClose={hideSnackbar}
+                handleActionClick={handleSnackbarActionClick}
+                isPointingUp={true}
+            />
         </ConversationsListContext.Provider>
     );
 }
 
 ConversationsList.propTypes = {
-    conversations: PropTypes.arrayOf(PropTypes.object).isRequired
+    conversations: PropTypes.arrayOf(PropTypes.object).isRequired,
+    isShowingSnackbar: PropTypes.bool.isRequired,
+    showSnackbar: PropTypes.func.isRequired,
+    hideSnackbar: PropTypes.func.isRequired
 };
 
 export default ConversationsList;

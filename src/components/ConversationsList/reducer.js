@@ -2,7 +2,9 @@ export const actionTypes = {
     fetchConversations: 'fetchConversations',
     storeConversations: 'storeConversations',
     storeOneConversation: 'storeOneConversation',
-    updateConversationActivity: 'updateConversationActivity'
+    updateConversationActivity: 'updateConversationActivity',
+    showSnackbar: 'showSnackbar',
+    hideSnackbar: 'hideSnackbar'
 };
 
 const formatConversations = (conversations, currentUserId) => {
@@ -44,6 +46,7 @@ const conversationSorter = (a, b) => {
 export const initialState = {
     isLoading: false,
     hasLoaded: false,
+    isShowingSnackbar: false,
     conversations: []
 };
 
@@ -94,6 +97,18 @@ export const reducer = (state, action) => {
                     ),
                     action.payload.currentUserId
                 ).sort(conversationSorter)
+            };
+
+        case actionTypes.showSnackbar:
+            return {
+                ...state,
+                isShowingSnackbar: true
+            };
+
+        case actionTypes.hideSnackbar:
+            return {
+                ...state,
+                isShowingSnackbar: false
             };
 
         default:

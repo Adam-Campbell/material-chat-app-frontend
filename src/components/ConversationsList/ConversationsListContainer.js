@@ -36,9 +36,16 @@ const ConversationsListContainer = (props) => {
             type: actionTypes.updateConversationActivity,
             payload: { conversationId, latestActivity, currentUserId }
         });
-    }, [ isSignedIn, currentUserId ])
+    }, [ isSignedIn, currentUserId ]);
 
-    
+    const showSnackbar = useCallback(() => {
+        dispatch({ type: actionTypes.showSnackbar });
+    }, []);
+
+    const hideSnackbar = useCallback(() => {
+        dispatch({ type: actionTypes.hideSnackbar });
+    }, []);
+
 
     useEffect(() => {
         if (isSignedIn) {
@@ -80,7 +87,14 @@ const ConversationsListContainer = (props) => {
     } else if (state.isLoading || !state.hasLoaded) {
         return <LoadingSpinner />
     } else {
-        return <ConversationsList conversations={state.conversations} />
+        return (
+            <ConversationsList 
+                conversations={state.conversations}
+                isShowingSnackbar={state.isShowingSnackbar}
+                showSnackbar={showSnackbar}
+                hideSnackbar={hideSnackbar} 
+            />
+        )
     }
 }
 
