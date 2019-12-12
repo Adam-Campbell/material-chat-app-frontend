@@ -8,25 +8,8 @@ import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
 import { ConversationsListContext } from './ConversationsListContext';
 import AlertSnackbar from '../AlertSnackbar';
 
-/*
-
-Todo:
-
-- incorporate List
-- construct rowRenderer function
-- construct CellMeasurerCache instance
-- create context for sharing item data
-- rework ConversationListItem to use the context to access data, and to use 
-CellMeasurer to measure itself.
-
-
-*/
 
 const useStyles = makeStyles(theme => ({
-    heading: {
-        //marginTop: theme.spacing(4),
-        //marginBottom: theme.spacing(2)
-    },
     titleContainer: {
         height: 80,
         display: 'flex',
@@ -61,7 +44,7 @@ const cache = new CellMeasurerCache({
 
 const ConversationsList = ({ conversations, isShowingSnackbar, showSnackbar, hideSnackbar }) => {
 
-    const { heading, titleContainer, listContainer } = useStyles();
+    const { titleContainer, listContainer } = useStyles();
 
     const conversationsListRef = useRef(null);
     const visibleSliceStart = useRef(0);
@@ -84,10 +67,9 @@ const ConversationsList = ({ conversations, isShowingSnackbar, showSnackbar, hid
     }, []);
 
     const handleSnackbarActionClick = useCallback(() => {
-        forceRecompute();
         scrollToRow(0);
         hideSnackbar();
-    }, [ hideSnackbar, forceRecompute, scrollToRow, ]);
+    }, [ hideSnackbar, scrollToRow, ]);
 
     // Ensures that the row heights adjust when the underlying conversations data updates.
     useLayoutEffect(() => {
@@ -99,7 +81,6 @@ const ConversationsList = ({ conversations, isShowingSnackbar, showSnackbar, hid
     // the start of the list. 
     useEffect(() => {
         if (visibleSliceStart.current > 0) {
-            console.log('snackbar should appear');
             showSnackbar();
         }
     }, [ conversations, visibleSliceStart, showSnackbar ]);
@@ -108,7 +89,6 @@ const ConversationsList = ({ conversations, isShowingSnackbar, showSnackbar, hid
         <ConversationsListContext.Provider value={{ conversations, cache }}>
             <div className={titleContainer}>
                 <Typography 
-                    className={heading} 
                     color="textPrimary" 
                     component="h1" 
                     variant="h4"
@@ -150,19 +130,3 @@ ConversationsList.propTypes = {
 };
 
 export default ConversationsList;
-
-
-/*
-
-{conversations.map(conversation => (
-                    <ConversationListItem 
-                        key={conversation._id}
-                        id={conversation._id} 
-                        otherParticipants={conversation.otherParticipants}
-                        latestActivity={conversation.latestActivity}
-                        hasUnreadMessages={conversation.hasUnreadMessages}
-                    />
-                ))}
-
-
-*/

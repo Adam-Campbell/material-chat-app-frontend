@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useReducer, useCallback } from 'react';
-
 import { CurrentUserContext } from '../CurrentUserContext';
 import { Redirect } from 'react-router-dom';
 import { getUsersConversations } from '../../Api';
@@ -8,7 +7,6 @@ import socketActions from '../../socketActions';
 import { actionTypes, reducer, initialState } from './reducer';
 import ConversationsList from './ConversationsList';
 import LoadingSpinner from '../LoadingSpinner';
-
 
 
 const ConversationsListContainer = (props) => {
@@ -46,41 +44,46 @@ const ConversationsListContainer = (props) => {
         dispatch({ type: actionTypes.hideSnackbar });
     }, []);
 
-
+    // Fetch the users conversations once ready
     useEffect(() => {
         if (isSignedIn) {
             emit(socketActions.getCurrentUsersConversationsRequest);
             dispatch({ type: actionTypes.fetchConversations });
+        }  
+    }, [ isSignedIn ]);
+
+    // Set up subscription to react to the conversations being pushed to the client.
+    useEffect(() => {
+        if (isSignedIn) {
             const off = on(socketActions.getCurrentUsersConversationsResponse, data => {
-                console.log(data);
                 const { conversations } = data;
                 storeConversations(conversations);
             });
             return off;
-        }  
-    }, [ isSignedIn, currentUserId ]);
+        }
+    }, [ isSignedIn ]);
 
+    // Set up subscription to react to new conversations being pushed to the client.
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.pushConversation, data => {
-                console.log(data);
                 const { conversation } = data;
                 storeOneConversation(conversation);
             });
             return off;
         }
-    }, [ isSignedIn, currentUserId ]);
+    }, [ isSignedIn ]);
 
+    // Set up subscription to react to new messages being pushed to the client.
     useEffect(() => {
         if (isSignedIn) {
             const off = on(socketActions.pushMessage, data => {
                 const { message, conversationId } = data;
-                console.log(data);
                 updateConversationActivity(conversationId, message.createdAt)
             });
             return off;
         }
-    }, [ isSignedIn, currentUserId ]);
+    }, [ isSignedIn ]);
 
     if (!isSignedIn) {
         return <Redirect to="/sign-in" />
@@ -99,31 +102,3 @@ const ConversationsListContainer = (props) => {
 }
 
 export default ConversationsListContainer;
-
-
-
-
-
-/*
-
-return !isSignedIn ? (
-        <Redirect to="/sign-in" />
-    ) : (
-        <>
-            <Typography className={heading} color="textPrimary" component="h1" variant="h4">Conversations</Typography>
-            <List>
-                {conversations.map(conversation => (
-                    <ConversationListItem 
-                        key={conversation._id}
-                        id={conversation._id} 
-                        otherParticipants={conversation.otherParticipants}
-                        latestActivity={conversation.latestActivity}
-                        hasUnreadMessages={conversation.hasUnreadMessages}
-                    />
-                ))}
-            </List>
-        </>
-    );
-
-
-*/
