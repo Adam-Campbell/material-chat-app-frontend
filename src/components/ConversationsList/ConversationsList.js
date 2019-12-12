@@ -1,108 +1,132 @@
-import React, { useContext, useEffect, useReducer, useCallback } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
+import MaterialList from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import ConversationListItem from './ConversationListItem';
-import { CurrentUserContext } from '../CurrentUserContext';
-import { Redirect } from 'react-router-dom';
-import { getUsersConversations } from '../../Api';
-import { SocketContext } from '../SocketContext';
-import socketActions from '../../socketActions';
-import { actionTypes, reducer } from './reducer';
+import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
+import { ConversationsListContext } from './ConversationsListContext';
+import AlertSnackbar from '../AlertSnackbar';
+
 
 const useStyles = makeStyles(theme => ({
-    heading: {
-        marginTop: theme.spacing(4),
-        marginBottom: theme.spacing(2)
+    titleContainer: {
+        height: 80,
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: 56,
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        [theme.breakpoints.up('sm')]: {
+            marginTop: 64,
+            paddingLeft: theme.spacing(3),
+            paddingRight: theme.spacing(3)
+        }
     },
-    snackbar: {
-        bottom: 96
+    listContainer: {
+        height: 'calc(100vh - 136px)',
+        [theme.breakpoints.up('sm')]: {
+            height: 'calc(100vh - 144px)'
+        }
     }
 }));
 
-const ConversationsList = (props) => {
-
-    const { heading, snackbar } = useStyles();
-    const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
-    const { emit, on } = useContext(SocketContext);
-    const [ conversations, dispatch ] = useReducer(reducer, []);
-
-    const storeConversations = useCallback((conversations) => {
-        dispatch({
-            type: actionTypes.storeConversations,
-            payload: { conversations, currentUserId }
-        });
-    }, [ isSignedIn, currentUserId ]);
-
-    const storeOneConversation = useCallback((conversation) => {
-        dispatch({
-            type: actionTypes.storeOneConversation,
-            payload: { conversation, currentUserId }
-        });
-    }, [ isSignedIn, currentUserId ]);
-
-    const updateConversationActivity = useCallback((conversationId, latestActivity) => {
-        dispatch({
-            type: actionTypes.updateConversationActivity,
-            payload: { conversationId, latestActivity, currentUserId }
-        });
-    }, [ isSignedIn, currentUserId ])
-
-    
-
-    useEffect(() => {
-        if (isSignedIn) {
-            emit(socketActions.getCurrentUsersConversationsRequest);
-            const off = on(socketActions.getCurrentUsersConversationsResponse, data => {
-                console.log(data);
-                const { conversations } = data;
-                storeConversations(conversations);
-            });
-            return off;
-        }  
-    }, [ isSignedIn, currentUserId ]);
-
-    useEffect(() => {
-        if (isSignedIn) {
-            const off = on(socketActions.pushConversation, data => {
-                console.log(data);
-                const { conversation } = data;
-                storeOneConversation(conversation);
-            });
-            return off;
-        }
-    }, [ isSignedIn, currentUserId ]);
-
-    useEffect(() => {
-        if (isSignedIn) {
-            const off = on(socketActions.pushMessage, data => {
-                const { message, conversationId } = data;
-                console.log(data);
-                updateConversationActivity(conversationId, message.createdAt)
-            });
-            return off;
-        }
-    }, [ isSignedIn, currentUserId ])
-
-    return !isSignedIn ? (
-        <Redirect to="/sign-in" />
-    ) : (
-        <>
-            <Typography className={heading} color="textPrimary" component="h1" variant="h4">Conversations</Typography>
-            <List>
-                {conversations.map(conversation => (
-                    <ConversationListItem 
-                        key={conversation._id}
-                        id={conversation._id} 
-                        otherParticipants={conversation.otherParticipants}
-                        latestActivity={conversation.latestActivity}
-                        hasUnreadMessages={conversation.hasUnreadMessages}
-                    />
-                ))}
-            </List>
-        </>
+const rowRenderer = ({ key, index, isScrolling, isVisible, style, parent }) => {
+    return (
+        <ConversationListItem index={index} style={style} key={key} parent={parent} />
     );
 }
+
+const cache = new CellMeasurerCache({
+    defaultHeight: 120,
+    fixedWidth: true
+});
+
+const ConversationsList = ({ conversations, isShowingSnackbar, showSnackbar, hideSnackbar }) => {
+
+    const { titleContainer, listContainer } = useStyles();
+
+    const conversationsListRef = useRef(null);
+    const visibleSliceStart = useRef(0);
+
+
+    const forceRecompute = useCallback((startIdx = 0) => {
+        if (conversationsListRef.current) {
+            conversationsListRef.current.recomputeRowHeights(startIdx);
+        }
+    }, []);
+
+    const scrollToRow = useCallback((rowNumber = 0) => {
+        if (conversationsListRef.current) {
+            conversationsListRef.current.scrollToRow(rowNumber);
+        }
+    }, []);
+
+    const updateVisibleSliceOnRowsRendered = useCallback(({ startIndex }) => {
+        visibleSliceStart.current = startIndex;
+    }, []);
+
+    const handleSnackbarActionClick = useCallback(() => {
+        scrollToRow(0);
+        hideSnackbar();
+    }, [ hideSnackbar, scrollToRow, ]);
+
+    // Ensures that the row heights adjust when the underlying conversations data updates.
+    useLayoutEffect(() => {
+        cache.clearAll();
+        forceRecompute();
+    }, [ conversations ]);
+
+    // Shows the snackbar if a new message is received and the user is not already viewing
+    // the start of the list. 
+    useEffect(() => {
+        if (visibleSliceStart.current > 0) {
+            showSnackbar();
+        }
+    }, [ conversations, visibleSliceStart, showSnackbar ]);
+
+    return (
+        <ConversationsListContext.Provider value={{ conversations, cache }}>
+            <div className={titleContainer}>
+                <Typography 
+                    color="textPrimary" 
+                    component="h1" 
+                    variant="h4"
+                >Conversations</Typography>
+            </div>
+            <div className={listContainer}>
+                <AutoSizer>
+                    {({ width, height }) => (
+                        <List 
+                            ref={conversationsListRef}
+                            width={width}
+                            height={height}
+                            rowCount={conversations.length}
+                            rowHeight={cache.rowHeight}
+                            rowRenderer={rowRenderer}
+                            deferredMeasurementCache={cache}
+                            estimatedRowSize={120}
+                            onRowsRendered={updateVisibleSliceOnRowsRendered}
+                        />
+                    )}
+                </AutoSizer>
+            </div>
+            <AlertSnackbar 
+                message="New message received"
+                isOpen={isShowingSnackbar}
+                handleClose={hideSnackbar}
+                handleActionClick={handleSnackbarActionClick}
+                isPointingUp={true}
+            />
+        </ConversationsListContext.Provider>
+    );
+}
+
+ConversationsList.propTypes = {
+    conversations: PropTypes.arrayOf(PropTypes.object).isRequired,
+    isShowingSnackbar: PropTypes.bool.isRequired,
+    showSnackbar: PropTypes.func.isRequired,
+    hideSnackbar: PropTypes.func.isRequired
+};
 
 export default ConversationsList;

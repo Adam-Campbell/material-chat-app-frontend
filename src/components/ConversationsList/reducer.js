@@ -1,7 +1,10 @@
 export const actionTypes = {
+    fetchConversations: 'fetchConversations',
     storeConversations: 'storeConversations',
     storeOneConversation: 'storeOneConversation',
-    updateConversationActivity: 'updateConversationActivity'
+    updateConversationActivity: 'updateConversationActivity',
+    showSnackbar: 'showSnackbar',
+    hideSnackbar: 'hideSnackbar'
 };
 
 const formatConversations = (conversations, currentUserId) => {
@@ -40,35 +43,73 @@ const conversationSorter = (a, b) => {
     }
 }
 
+export const initialState = {
+    isLoading: false,
+    hasLoaded: false,
+    isShowingSnackbar: false,
+    conversations: []
+};
+
 
 export const reducer = (state, action) => {
     
     switch (action.type) {
+
+        case actionTypes.fetchConversations:
+            return {
+                ...state,
+                isLoading: true
+            };
+
         case actionTypes.storeConversations:
-            return formatConversations(
-                action.payload.conversations, 
-                action.payload.currentUserId
-            );
+            return {
+                ...state,
+                isLoading: false,
+                hasLoaded: true, 
+                conversations: formatConversations(
+                    action.payload.conversations,
+                    action.payload.currentUserId
+                )
+            };
 
         // technically the sorting operation below should be redundant, leaving for now however.
         case actionTypes.storeOneConversation:
-            return formatConversations(
-                [ 
-                    action.payload.conversation,
-                    ...state.filter(c => c._id !== action.payload.conversation._id), 
-                ],
-                action.payload.currentUserId
-            ).sort(conversationSorter);
+            return {
+                ...state,
+                conversations: formatConversations(
+                    [ 
+                        action.payload.conversation,
+                        ...state.conversations.filter(c => c._id !== action.payload.conversation._id), 
+                    ],
+                    action.payload.currentUserId
+                ).sort(conversationSorter)
+            };
+            
 
         case actionTypes.updateConversationActivity:
-            return formatConversations(
-                updateLatestActivity(
-                    state, 
-                    action.payload.conversationId, 
-                    action.payload.latestActivity
-                ),
-                action.payload.currentUserId
-            ).sort(conversationSorter)
+            return {
+                ...state,
+                conversations: formatConversations(
+                    updateLatestActivity(
+                        state.conversations, 
+                        action.payload.conversationId, 
+                        action.payload.latestActivity
+                    ),
+                    action.payload.currentUserId
+                ).sort(conversationSorter)
+            };
+
+        case actionTypes.showSnackbar:
+            return {
+                ...state,
+                isShowingSnackbar: true
+            };
+
+        case actionTypes.hideSnackbar:
+            return {
+                ...state,
+                isShowingSnackbar: false
+            };
 
         default:
             return state;

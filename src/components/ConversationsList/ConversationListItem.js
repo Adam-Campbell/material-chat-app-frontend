@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
@@ -11,9 +11,19 @@ import useHover from '../useHover';
 import { getInitials, getFormattedTimestamp } from '../../utils';
 import NewMessagesIcon from '@material-ui/icons/NewReleases';
 import EmailIcon from '@material-ui/icons/Email';
+import { ConversationsListContext } from './ConversationsListContext';
+import { CellMeasurer } from 'react-virtualized';
 
 const useStyles = makeStyles(theme => ({
-    container: {
+    outerContainer: {
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        [theme.breakpoints.up('sm')]: {
+            paddingLeft: theme.spacing(3),
+            paddingRight: theme.spacing(3)
+        }
+    },
+    listItem: {
         paddingLeft: 0,
         paddingRight: 0,
     },
@@ -38,10 +48,11 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const ConversationListItem = ({ otherParticipants, id, latestActivity, hasUnreadMessages }) => {
+const ConversationListItem = ({ index, style, parent }) => {
 
-    const { container, link, timestamp, participantsText, newMessagesIcon } = useStyles();
-
+    const { outerContainer, listItem, link, timestamp, participantsText, newMessagesIcon } = useStyles();
+    const { conversations, cache } = useContext(ConversationsListContext);
+    const { otherParticipants, latestActivity, hasUnreadMessages, _id } = conversations[index];
     const { isHovered, containerProps } = useHover();
 
     const initials = useMemo(() => {
@@ -62,28 +73,40 @@ const ConversationListItem = ({ otherParticipants, id, latestActivity, hasUnread
     }, [ latestActivity ]);
 
     return (
-        <ListItem className={container} divider={true} selected={isHovered}>
-            <Link className={link} to={`/conversation/${id}`} {...containerProps}>
-                <ListItemAvatar>
-                    <Avatar>{initials}</Avatar>
-                </ListItemAvatar>
-                <ListItemText 
-                    className={participantsText}
-                    primary={primaryText}
-                    secondary={secondaryText}
-                />
-                {hasUnreadMessages && <NewMessagesIcon className={newMessagesIcon} color="secondary" />}
-                <Typography variant="subtitle2" component="p">{formattedTimestamp}</Typography>
-            </Link>
-        </ListItem>
+        <CellMeasurer
+            cache={cache}
+            parent={parent}
+            columnIndex={0}
+            rowIndex={index}
+        >
+            <div style={style} className={outerContainer}>
+                <ListItem className={listItem} component="div" divider={true} selected={isHovered}>
+                    <Link className={link} to={`/conversation/${_id}`} {...containerProps}>
+                        <ListItemAvatar>
+                            <Avatar>{initials}</Avatar>
+                        </ListItemAvatar>
+                        <ListItemText 
+                            className={participantsText}
+                            primary={primaryText}
+                            secondary={secondaryText}
+                        />
+                        {hasUnreadMessages && <NewMessagesIcon className={newMessagesIcon} color="secondary" />}
+                        <Typography variant="subtitle2" component="p">{formattedTimestamp}</Typography>
+                    </Link>
+                </ListItem>
+            </div>
+        </CellMeasurer>
     );
 }
 
 ConversationListItem.propTypes = {
-    otherParticipants: PropTypes.arrayOf(PropTypes.string).isRequired,
-    id: PropTypes.string.isRequired,
-    latestActivity: PropTypes.string.isRequired,
-    hasUnreadMessages: PropTypes.bool.isRequired
+    // otherParticipants: PropTypes.arrayOf(PropTypes.string).isRequired,
+    // id: PropTypes.string.isRequired,
+    // latestActivity: PropTypes.string.isRequired,
+    // hasUnreadMessages: PropTypes.bool.isRequired
+    index: PropTypes.number.isRequired,
+    style: PropTypes.object.isRequired,
+    parent: PropTypes.any
 };
 
 export default ConversationListItem;
