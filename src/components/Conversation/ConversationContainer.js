@@ -6,12 +6,12 @@ import Conversation from './Conversation';
 import LoadingSpinner from '../LoadingSpinner';
 import { Redirect } from 'react-router-dom';
 import socketActions from '../../socketActions';
-import { actionTypes, initialState, reducer } from './reducer';
+import { actionTypes, initialState, reducer, optimisticMessagePlaceholderId } from './reducer';
 
 const ConversationContainer = () => {
 
     const { id } = useParams();
-    const { isSignedIn } = useContext(CurrentUserContext);
+    const { isSignedIn, currentUserName, currentUserId } = useContext(CurrentUserContext);
     const [ state, dispatch ] = useReducer(reducer, initialState);
     const { emit, on } = useContext(SocketContext);
 
@@ -22,6 +22,22 @@ const ConversationContainer = () => {
     const hideSnackbar = useCallback(() => {
         dispatch({ type: actionTypes.hideSnackbar });
     }, []);
+
+    const addOptimisticMessagePlaceholder = useCallback((messageText) => {
+        const messageObject = {
+            author: {
+                username: currentUserName,
+                _id: currentUserId
+            },
+            body: messageText,
+            createdAt: new Date().toISOString(),
+            _id: optimisticMessagePlaceholderId
+        };
+        dispatch({
+            type: actionTypes.addOptimisticMessagePlaceholder,
+            payload: { message: messageObject }
+        });
+    }, [ currentUserId, currentUserName ]);
 
     // Fetch the conversation once ready
     useEffect(() => {
@@ -70,12 +86,14 @@ const ConversationContainer = () => {
         if (isSignedIn) {
             const off = on(socketActions.pushMessage, data => {
                 const { message, conversationId } = data;
+                const isOwnMessage = message.author._id === currentUserId;
                 dispatch({
                     type: actionTypes.addMessage,
                     payload: {
                         conversationId,
                         currentConversationId: id, 
-                        message
+                        message,
+                        isOwnMessage
                     }
                 });
                 const timestamp = message.createdAt;
@@ -83,7 +101,20 @@ const ConversationContainer = () => {
             });
             return off;
         }
-    }, [ isSignedIn, id, on, emit ]);
+    }, [ isSignedIn, id, on, emit, currentUserId ]);
+
+    // Set up the subscription to react to the sendMessageError event being
+    // pushed to the client
+    useEffect(() => {
+        if (isSignedIn) {
+            const off = on(socketActions.sendMessageError, () => {
+                dispatch({
+                    type: actionTypes.revertOptimisticMessagePlaceholder
+                });
+            });
+            return off;
+        }
+    }, [ isSignedIn, on ]); 
 
     if (!isSignedIn) {
         return <Redirect to="/sign-in" />
@@ -96,6 +127,7 @@ const ConversationContainer = () => {
                 isShowingSnackbar={state.isShowingSnackbar}
                 showSnackbar={showSnackbar}
                 hideSnackbar={hideSnackbar}
+                addOptimisticMessagePlaceholder={addOptimisticMessagePlaceholder}
             />
         );
     }
