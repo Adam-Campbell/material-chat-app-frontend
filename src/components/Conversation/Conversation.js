@@ -30,7 +30,13 @@ const cache = new CellMeasurerCache({
 });
 
 
-const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnackbar }) => {
+const Conversation = ({ 
+    conversation, 
+    isShowingSnackbar, 
+    showSnackbar, 
+    hideSnackbar, 
+    addOptimisticMessagePlaceholder 
+}) => {
 
     const { conversationContainer } = useStyles();
     const messagesListRef = useRef(null);
@@ -113,6 +119,7 @@ const Conversation = ({ conversation, isShowingSnackbar, showSnackbar, hideSnack
                 </div>
                 <AddMessageForm 
                     conversationId={conversation._id}
+                    addOptimisticMessagePlaceholder={addOptimisticMessagePlaceholder}
                 />
                 <AlertSnackbar 
                     message="View new message"
@@ -144,7 +151,8 @@ Conversation.propTypes = {
     }).isRequired,
     isShowingSnackbar: PropTypes.bool.isRequired,
     showSnackbar: PropTypes.func.isRequired,
-    hideSnackbar: PropTypes.func.isRequired
+    hideSnackbar: PropTypes.func.isRequired,
+    addOptimisticMessagePlaceholder: PropTypes.func.isRequired
 };
 
 export default Conversation;

@@ -12,9 +12,6 @@ const useStyles = makeStyles(theme => ({
         left: 0,
         bottom: 0,
         width: '100%',
-        //marginTop: 'auto',
-        //border: 'solid blue 1px',
-        //borderTop: 'solid 1px #e0e0e0',
         height: 90,
         display: 'flex',
         padding: theme.spacing(2),
@@ -29,7 +26,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const AddMessageForm = ({ conversationId }) => {
+const AddMessageForm = ({ conversationId, addOptimisticMessagePlaceholder }) => {
 
     const { styledForm, messageInput } = useStyles();
 
@@ -39,8 +36,10 @@ const AddMessageForm = ({ conversationId }) => {
 
     const handleSubmit = e => {
         e.preventDefault();
-        emit(socketActions.sendMessage, { conversationId, messageText: message });
+        const messageText = message;
         setMessage('');
+        addOptimisticMessagePlaceholder(messageText);
+        emit(socketActions.sendMessage, { conversationId, messageText });
     }
 
     return (
@@ -64,7 +63,8 @@ const AddMessageForm = ({ conversationId }) => {
 }
 
 AddMessageForm.propTypes = {
-    conversationId: PropTypes.string.isRequired
+    conversationId: PropTypes.string.isRequired,
+    addOptimisticMessagePlaceholder: PropTypes.func.isRequired
 };
 
 export default AddMessageForm;

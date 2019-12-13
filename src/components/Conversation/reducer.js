@@ -4,8 +4,12 @@ export const actionTypes = {
     addMessage: 'addMessage',
     updateLastViewed: 'updateLastViewed',
     showSnackbar: 'showSnackbar',
-    hideSnackbar: 'hideSnackbar'
+    hideSnackbar: 'hideSnackbar',
+    addOptimisticMessagePlaceholder: 'addOptimisticMessagePlaceholder',
+    revertOptimisticMessagePlaceholder: 'revertOptimisticMessagePlaceholder'
 };
+
+export const optimisticMessagePlaceholderId = 'optimisticMessagePlaceholderId';
 
 const updateLastViewed = (lastViewedArray, userId, timestamp) => {
     return lastViewedArray.map(lv => {
@@ -22,7 +26,15 @@ export const initialState = {
     isShowingSnackbar: false
 }
 
+const handleAddNewMessage = (messagesState, newMessage, isOwnMessage) => {
+    const combined = [ ...messagesState, newMessage ];
+    return isOwnMessage ? 
+        combined.filter(msg => msg._id !== optimisticMessagePlaceholderId) :
+        combined;
+}
+
 export const reducer = (state, action) => {
+    console.log(state, action);
     switch (action.type) {
 
         case actionTypes.fetchConversation:
@@ -45,19 +57,42 @@ export const reducer = (state, action) => {
                 ...state,
                 conversation: {
                     ...state.conversation,
+                    messages: handleAddNewMessage(
+                        state.conversation.messages,
+                        action.payload.message,
+                        action.payload.isOwnMessage
+                    )
+                }
+            } : state;
+
+        case actionTypes.addOptimisticMessagePlaceholder:
+            return {
+                ...state,
+                conversation: {
+                    ...state.conversation,
                     messages: [
                         ...state.conversation.messages,
                         action.payload.message
                     ]
                 }
-            } : state;
+            };
+
+        case actionTypes.revertOptimisticMessagePlaceholder:
+            return {
+                ...state,
+                conversation: {
+                    ...state.conversation,
+                    messages: state.conversation.messages.filter(msg => {
+                        return msg._id !== optimisticMessagePlaceholderId
+                    })
+                }
+            };
 
         case actionTypes.updateLastViewed:
             return action.payload.conversationId === action.payload.currentConversationId ? {
                 ...state,
                 conversation: {
                     ...state.conversation,
-                    //participantsLastViewed: action.payload.lastViewed
                     participantsLastViewed: updateLastViewed(
                         state.conversation.participantsLastViewed,
                         action.payload.userId,
