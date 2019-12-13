@@ -10,30 +10,30 @@ import LoadingSpinner from '../LoadingSpinner';
 
 const ConversationsListContainer = (props) => {
 
-    const { isSignedIn, currentUserId } = useContext(CurrentUserContext);
+    const { isSignedIn } = useContext(CurrentUserContext);
     const { emit, on } = useContext(SocketContext);
     const [ state, dispatch ] = useReducer(reducer, initialState);
 
     const storeConversations = useCallback((conversations) => {
         dispatch({
             type: actionTypes.storeConversations,
-            payload: { conversations, currentUserId }
+            payload: { conversations }
         });
-    }, [ currentUserId ]);
+    }, []);
 
     const storeOneConversation = useCallback((conversation) => {
         dispatch({
             type: actionTypes.storeOneConversation,
-            payload: { conversation, currentUserId }
+            payload: { conversation }
         });
-    }, [ currentUserId ]);
+    }, []);
 
     const updateConversationActivity = useCallback((conversationId, latestActivity) => {
         dispatch({
             type: actionTypes.updateConversationActivity,
-            payload: { conversationId, latestActivity, currentUserId }
+            payload: { conversationId, latestActivity }
         });
-    }, [ currentUserId ]);
+    }, []);
 
     const showSnackbar = useCallback(() => {
         dispatch({ type: actionTypes.showSnackbar });
