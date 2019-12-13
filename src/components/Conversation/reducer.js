@@ -34,7 +34,7 @@ const handleAddNewMessage = (messagesState, newMessage, isOwnMessage) => {
 }
 
 export const reducer = (state, action) => {
-    console.log(state, action);
+    
     switch (action.type) {
 
         case actionTypes.fetchConversation:
