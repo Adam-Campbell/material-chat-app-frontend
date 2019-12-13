@@ -1,9 +1,10 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Message from './Message';
 import AddMessageForm from './AddMessageForm';
 import { ConversationContext } from './ConversationContext';
+import { CurrentUserContext } from '../CurrentUserContext';
 import { List, AutoSizer, CellMeasurerCache } from 'react-virtualized';
 import AlertSnackbar from '../AlertSnackbar';
 
@@ -39,9 +40,11 @@ const Conversation = ({
 }) => {
 
     const { conversationContainer } = useStyles();
+    const { currentUserId } = useContext(CurrentUserContext);
     const messagesListRef = useRef(null);
     const isInitialMount = useRef(true);
     const visibleSliceEnd = useRef(0);
+    const previousMessagesLength = useRef(0);
 
     const forceRecompute = useCallback((startIdx = 0) => {
         if (messagesListRef.current) {
@@ -67,23 +70,43 @@ const Conversation = ({
         visibleSliceEnd.current = stopIndex;
     }, []);
 
-    // Runs every time the length of conversation.messages array changes (every time a new) 
-    // message is received) but does not run on initial render. Either scrolls down to the 
-    // bottom of the conversation or triggers an alert depending on which part of the
-    // conversation is currently being rendered. 
+    // Performs its logic everytime the a new message is received, but does not run on initial
+    // render. If the user was already viewing the most recent message it updates the scroll
+    // so that the new message comes into view. If the user was not viewing the most recent
+    // message then it triggers a snackbar alert if the new message is not from the current
+    // user, or does nothing if it is from the current user.  
     useEffect(() => {
         if (isInitialMount.current) return;
+    
         const len = conversation.messages.length;
-        if (visibleSliceEnd.current >= len - 2) {
-            forceRecompute(len - 1);
-            setTimeout(() => {
-                scrollToRow(len - 1);
-            }, 0)     
-        } else {
-            showSnackbar();
+        const prevLen = previousMessagesLength.current;
+        previousMessagesLength.current = len;
+        // Only perform the actual logic if the length of the messages array has changed
+        // since the last render. 
+        if (len !== prevLen) {
+            if (visibleSliceEnd.current >= len - 2) {
+                forceRecompute(len - 1);
+                setTimeout(() => {
+                    scrollToRow(len - 1);
+                }, 0)     
+            } else {
+                const lastMsg = conversation.messages[conversation.messages.length-1];
+                if (lastMsg.author._id !== currentUserId) {
+                    showSnackbar();
+                }
+            }
         }
     
-    }, [ conversation.messages.length, isInitialMount, visibleSliceEnd, forceRecompute, scrollToRow, showSnackbar ]);
+    }, [ 
+        conversation.messages, 
+        isInitialMount, 
+        visibleSliceEnd, 
+        forceRecompute, 
+        scrollToRow, 
+        showSnackbar, 
+        previousMessagesLength,
+        currentUserId
+    ]);
 
     // Runs only on initial render, responsible for scrolling down to the bottom of the 
     // conversation (the most recent message).
