@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
 import Typography from '@material-ui/core/Typography';
-import { formatDate } from '../../../utils';
+import { getDateMarkerString } from './messageUtils';
 
 const useStyles = makeStyles(theme => ({
     dateContainer: {
@@ -21,18 +21,6 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const getDateMarkerString = (createdAt, previousCreatedAt) => {
-    if (!previousCreatedAt) {
-        return formatDate( new Date(createdAt) );
-    } else {
-        const createdDate = formatDate( new Date(createdAt) );
-        const previousCreatedDate = formatDate( new Date(previousCreatedAt) );
-        return createdDate === previousCreatedDate ?
-            false :
-            createdDate
-    }
-}
-
 const DateMarker = ({ createdAt, previousCreatedAt }) => {
 
     const { dateContainer, dateContainerDivider, dateContainerText } = useStyles();
@@ -42,7 +30,7 @@ const DateMarker = ({ createdAt, previousCreatedAt }) => {
     }, [ createdAt, previousCreatedAt ]);
 
     return dateMarkerString ? (
-        <div className={dateContainer}>
+        <div className={dateContainer} data-testid="date-marker-container">
             <Divider className={dateContainerDivider} component="span" light={true} />
                 <Typography 
                     className={dateContainerText} 

@@ -31,7 +31,11 @@ const LatestActivity = ({ participantsLastViewed, latestActivity }) => {
 
     return (
         <>
-            {hasUnreadMessages && <NewMessagesIcon className={newMessagesIcon} color="secondary" />}
+            {hasUnreadMessages && <NewMessagesIcon 
+                data-testid="new-messages-icon" 
+                className={newMessagesIcon} 
+                color="secondary" 
+            />}
             <Typography variant="subtitle2" component="p">{formattedTimestamp}</Typography>
         </>
     );
