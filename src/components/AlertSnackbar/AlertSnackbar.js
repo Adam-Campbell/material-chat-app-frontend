@@ -19,16 +19,27 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const AlertSnackbar = ({ message, isOpen, handleClose, handleActionClick, bottomDistance = 24, isPointingUp }) => {
+const AlertSnackbar = ({ 
+    message, 
+    isOpen, 
+    handleClose, 
+    handleActionClick, 
+    bottomDistance = 24, 
+    isPointingUp 
+}) => {
     
     const { snackbarContainer, contentContainer } = useStyles({ bottomDistance });
 
     return (
-        <Snackbar className={snackbarContainer} open={isOpen} onClose={handleClose}>
+        <Snackbar 
+            className={snackbarContainer} 
+            open={isOpen} 
+            onClose={handleClose}
+        >
             <SnackbarContent 
                 className={contentContainer}
                 message={message}
-                action={<IconButton color="inherit" onClick={handleActionClick}>
+                action={<IconButton data-testid="snackbar-action-button" color="inherit" onClick={handleActionClick}>
                     {isPointingUp ? <UpArrowIcon /> : <DownArrowIcon />}
                 </IconButton>}
             />

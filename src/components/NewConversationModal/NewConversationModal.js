@@ -90,7 +90,7 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
             <Paper className={modalPaper}>
                 {error && <p>{error}</p>}
                 <Typography className={formHeading} component="h2" variant="h5">New conversation</Typography>
-                <form onSubmit={handleSubmit} className={styledForm}>
+                <form data-testid="new-conversation-form" onSubmit={handleSubmit} className={styledForm}>
                     <UserSearch 
                         value={userSearchValue}
                         setValue={setUserSearchValue}

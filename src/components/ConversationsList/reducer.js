@@ -7,21 +7,6 @@ export const actionTypes = {
     hideSnackbar: 'hideSnackbar'
 };
 
-const formatConversations = (conversations, currentUserId) => {
-    return conversations.map(conversation => {
-        const otherParticipants = conversation.participants
-            .filter(user => user._id !== currentUserId)
-            .map(user => user.username);
-        const lastViewed = conversation.participantsLastViewed.find(p => p.user._id === currentUserId).lastViewed || 0;
-        const hasUnreadMessages = new Date(lastViewed) < new Date(conversation.latestActivity); 
-        return {
-            ...conversation, 
-            otherParticipants,
-            hasUnreadMessages
-        }
-    });
-}
-
 const updateLatestActivity = (conversations, conversationId, latestActivity) => {
     const cloned = [ ...conversations ];
     const idx = cloned.findIndex(c => c._id === conversationId);
@@ -66,36 +51,26 @@ export const reducer = (state, action) => {
                 ...state,
                 isLoading: false,
                 hasLoaded: true, 
-                conversations: formatConversations(
-                    action.payload.conversations,
-                    action.payload.currentUserId
-                )
+                conversations: action.payload.conversations
             };
 
-        // technically the sorting operation below should be redundant, leaving for now however.
         case actionTypes.storeOneConversation:
             return {
                 ...state,
-                conversations: formatConversations(
-                    [ 
-                        action.payload.conversation,
-                        ...state.conversations.filter(c => c._id !== action.payload.conversation._id), 
-                    ],
-                    action.payload.currentUserId
-                ).sort(conversationSorter)
+                conversations: [
+                    action.payload.conversation,
+                    ...state.conversations.filter(c => c._id !== action.payload.conversation._id)
+                ].sort(conversationSorter)
             };
             
 
         case actionTypes.updateConversationActivity:
             return {
                 ...state,
-                conversations: formatConversations(
-                    updateLatestActivity(
-                        state.conversations, 
-                        action.payload.conversationId, 
-                        action.payload.latestActivity
-                    ),
-                    action.payload.currentUserId
+                conversations: updateLatestActivity(
+                    state.conversations,
+                    action.payload.conversationId,
+                    action.payload.latestActivity
                 ).sort(conversationSorter)
             };
 

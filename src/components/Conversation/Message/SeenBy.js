@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import { getLastViewedString } from './messageUtils';
 
 const useStyles = makeStyles(theme => ({
     statusContainer: {
@@ -14,30 +15,6 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const getLastViewedString = (participantsLastViewed, currentUserId, createdAt) => {
-    // Minus one because there is no need to include current user in this
-    const totalOtherParticipants = participantsLastViewed.length - 1;
-    const matchingPlvs = participantsLastViewed.filter(plv => {
-        return plv.lastViewed === createdAt && plv.user._id !== currentUserId
-    })
-    .map(plv => plv.user.username);
-    
-    if (matchingPlvs.length === 0) {
-        return false;
-    }
-    if (matchingPlvs.length === 1) {
-        return totalOtherParticipants === 1 ? 'Seen' : `Seen by ${matchingPlvs[0]}`;
-    }
-    if (matchingPlvs.length > 1) {
-        if (matchingPlvs.length === totalOtherParticipants) {
-            return 'Seen by everyone';
-        } else {
-            return matchingPlvs.length === 2 ?
-                `Seen by ${matchingPlvs[0]} and ${matchingPlvs[1]}` :
-                `Seen by ${matchingPlvs[0]} and ${matchingPlvs.length - 1} ${matchingPlvs.length > 2 ? 'others' : 'other'}`
-        }
-    }
-}
 
 const SeenBy = ({ participantsLastViewed, currentUserId, createdAt, isOwnMessage }) => {
 
@@ -56,7 +33,7 @@ const SeenBy = ({ participantsLastViewed, currentUserId, createdAt, isOwnMessage
                 color="textSecondary"
             >{seenByString}</Typography>
         </div>
-    ) : <span className={statusContainer}></span>;
+    ) : <span className={statusContainer} data-testid="seenby-placeholder-element"></span>;
 };
 
 SeenBy.propTypes = {
