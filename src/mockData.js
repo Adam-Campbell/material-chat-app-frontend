@@ -13,6 +13,11 @@ export const user3 = {
     username: 'jane bloggs'
 };
 
+export const user4 = {
+    _id: '3',
+    username: 'john smith'
+};
+
 export const fullConversation = {
     _id: '10',
     participants: [ user1, user2 ],

@@ -54,6 +54,7 @@ const AddMessageForm = ({ conversationId, addOptimisticMessagePlaceholder }) => 
                 variant="outlined"
             />
             <Button 
+                data-testid="submit-button"
                 type="submit" 
                 disabled={message === ''} 
                 variant="contained"

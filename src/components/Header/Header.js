@@ -41,14 +41,19 @@ const Header = () => {
                 {isSignedIn ? (
                     <>
                         <BackToConversations />
-                        <IconButton 
+                        <IconButton
+                            data-testid="open-modal-button" 
                             color="inherit" 
                             className={pushRightButton} 
                             onClick={() => setIsShowingModal(prev => !prev)}
                         >
                             <CreateIcon />
                         </IconButton>
-                        <Button color="inherit" onClick={handleSignOut}>Sign Out</Button>
+                        <Button 
+                            data-testid="sign-out-button" 
+                            color="inherit" 
+                            onClick={handleSignOut}
+                        >Sign Out</Button>
                         <NewConversationModal 
                             isShowingModal={isShowingModal}
                             closeModal={() => setIsShowingModal(false)}
@@ -56,8 +61,19 @@ const Header = () => {
                     </>
                 ) : (
                     <>
-                        <Button className={pushRightButton} color="inherit" component={ButtonLink} to="/sign-in">Sign In</Button>
-                        <Button color="inherit" component={ButtonLink} to="/sign-up">Sign Up</Button>
+                        <Button
+                            data-testid="sign-in-link" 
+                            className={pushRightButton} 
+                            color="inherit" 
+                            component={ButtonLink} 
+                            to="/sign-in"
+                        >Sign In</Button>
+                        <Button 
+                            data-testid="sign-up-link"
+                            color="inherit" 
+                            component={ButtonLink} 
+                            to="/sign-up"
+                        >Sign Up</Button>
                     </>
                 )}
             </ToolBar>

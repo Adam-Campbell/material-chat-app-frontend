@@ -20,7 +20,12 @@ const BackToConversations = () => {
     const { pathname } = useLocation();
 
     return conversationRouteRegex.test(pathname) ? (
-        <Button color="inherit" component={ButtonLink} to="/conversations">
+        <Button 
+            data-testid="back-to-conversations-link" 
+            color="inherit" 
+            component={ButtonLink} 
+            to="/conversations"
+        >
             <BackIcon className={backIcon} fontSize="small" />
             All
         </Button>

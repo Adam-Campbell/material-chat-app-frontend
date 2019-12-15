@@ -6,12 +6,17 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import { getInitials } from '../../../utils';
 import { CurrentUserContext } from '../../CurrentUserContext';
+import { 
+    getOtherParticipants, 
+    getPrimaryText, 
+    getSecondaryText 
+} from './listItemUtils';
 
 const useStyles = makeStyles(theme => ({
     participantsText: {
         marginLeft: 'auto'
     }
-}))
+}));
 
 const Participants = ({ participants }) => {
 
@@ -20,9 +25,7 @@ const Participants = ({ participants }) => {
     const { currentUserId } = useContext(CurrentUserContext);
 
     const otherParticipants = useMemo(() => {
-        return participants
-        .filter(user => user._id !== currentUserId)
-        .map(user => user.username);
+        return getOtherParticipants(participants, currentUserId);
     }, [ participants, currentUserId ]);
 
     const initials = useMemo(() => {
@@ -30,12 +33,11 @@ const Participants = ({ participants }) => {
     }, [ otherParticipants ]);
 
     const primaryText = useMemo(() => {
-        return otherParticipants.slice(0,2).join(', ');
+        return getPrimaryText(otherParticipants);
     }, [ otherParticipants ]);
 
     const secondaryText = useMemo(() => {
-        const remaining = otherParticipants.length - 2;
-        return remaining > 0 ? `plus ${remaining} more` : null;
+        return getSecondaryText(otherParticipants);
     }, [ otherParticipants ]);
 
     return (

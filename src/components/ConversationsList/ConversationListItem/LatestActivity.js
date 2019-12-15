@@ -5,6 +5,7 @@ import NewMessagesIcon from '@material-ui/icons/NewReleases';
 import Typography from '@material-ui/core/Typography';
 import { getFormattedTimestamp } from '../../../utils';
 import { CurrentUserContext } from '../../CurrentUserContext';
+import { getHasUnreadMessages } from './listItemUtils';
 
 const useStyles = makeStyles(theme => ({
     newMessagesIcon: {
@@ -19,11 +20,8 @@ const LatestActivity = ({ participantsLastViewed, latestActivity }) => {
     const { currentUserId } = useContext(CurrentUserContext);
 
     const hasUnreadMessages = useMemo(() => {
-        const currentUserPLV = participantsLastViewed.find(p => p.user._id === currentUserId);
-        const lastViewed = (currentUserPLV && currentUserPLV.lastViewed) ? currentUserPLV.lastViewed : 0; 
-        const hasUnreadMessages = new Date(lastViewed) < new Date(latestActivity); 
-        return hasUnreadMessages;
-    }, [ currentUserId, participantsLastViewed, latestActivity ]);
+        return getHasUnreadMessages(participantsLastViewed, latestActivity, currentUserId);
+    }, [ participantsLastViewed, latestActivity, currentUserId ]);
 
     const formattedTimestamp = useMemo(() => {
         return getFormattedTimestamp(latestActivity);
