@@ -26,6 +26,8 @@ export const signOut = () => a.get('auth/sign-out');
 
 export const signUp = (username, password) => post('auth/sign-up', { username, password });
 
+export const checkUsername = (username) => post('auth/check-username', { username });
+
 export const getUsersConversations = () => a.get('me/conversations');
 
 export const getConversation = (conversationId) => a.get(`conversations/${conversationId}`);
