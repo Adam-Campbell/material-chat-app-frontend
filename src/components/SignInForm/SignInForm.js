@@ -90,6 +90,7 @@ const SignInForm = () => {
                     <Field name="username">
                         {({ field, form, meta }) => (
                             <TextField 
+                                data-testid="username-input"
                                 type="text"
                                 className={textInput}
                                 autoFocus={true}
@@ -108,6 +109,7 @@ const SignInForm = () => {
                     <Field name="password">
                         {({ field, form, meta }) => (
                             <TextField 
+                                data-testid="password-input"
                                 type="password"
                                 className={textInput}
                                 variant="outlined"
@@ -122,7 +124,8 @@ const SignInForm = () => {
                             />
                         )}
                     </Field>
-                    <Button 
+                    <Button
+                        data-testid="submit-button" 
                         className={submitButton} 
                         variant="contained" 
                         color="primary" 
