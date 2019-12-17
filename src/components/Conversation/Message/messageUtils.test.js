@@ -1,4 +1,4 @@
-import { getDateMarkerString, getLastViewedString } from './messageUtils';
+import { getDateMarkerString, getSeenByString } from './messageUtils';
 
 describe('getDateMarkerString', () => {
     it('parses the dates from the two ISO strings supplied and returns false if they are the same', () => {
@@ -52,7 +52,7 @@ describe('getLastViewedString', () => {
     };
 
     it('returns false if there are no matching other participants', () => {
-        expect(getLastViewedString([
+        expect(getSeenByString([
             currentUserPlv,
             nonMatchingPlv1
         ], currentUserId, createdAt))
@@ -60,7 +60,7 @@ describe('getLastViewedString', () => {
     });
     it(`returns the correct string if there is one matching other participant and only one
     total other participant`, () => {
-        expect(getLastViewedString([
+        expect(getSeenByString([
             currentUserPlv,
             matchingPlv1
         ], currentUserId, createdAt))
@@ -68,7 +68,7 @@ describe('getLastViewedString', () => {
     });
     it(`returns the correct string if there is one matching other participant but there are
     more than one total other participants`, () => {
-        expect(getLastViewedString([
+        expect(getSeenByString([
             currentUserPlv,
             matchingPlv1,
             nonMatchingPlv1
@@ -76,7 +76,7 @@ describe('getLastViewedString', () => {
         .toBe(`Seen by ${matchingPlv1.user.username}`);
     });
     it('returns the correct string if there are multiple other participants and they all match', () => {
-        expect(getLastViewedString([
+        expect(getSeenByString([
             currentUserPlv,
             matchingPlv1,
             matchingPlv2,
@@ -86,7 +86,7 @@ describe('getLastViewedString', () => {
     });
     it(`returns the correct string if there are two matching other participants but more than
     two total other participants`, () => {
-        expect(getLastViewedString([
+        expect(getSeenByString([
             currentUserPlv,
             matchingPlv1,
             matchingPlv2,
@@ -96,7 +96,7 @@ describe('getLastViewedString', () => {
     });
     it(`returns the correct string if there are more than two matching other participants but still
     a greater amount of total other participants`, () => {
-        expect(getLastViewedString([
+        expect(getSeenByString([
             currentUserPlv,
             matchingPlv1,
             matchingPlv2,

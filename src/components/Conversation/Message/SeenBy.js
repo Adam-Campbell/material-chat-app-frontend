@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import { getLastViewedString } from './messageUtils';
+import { getSeenByString } from './messageUtils';
 
 const useStyles = makeStyles(theme => ({
     statusContainer: {
@@ -21,7 +21,7 @@ const SeenBy = ({ participantsLastViewed, currentUserId, createdAt, isOwnMessage
     const { statusContainer, statusText } = useStyles({ isOwnMessage })
 
     const seenByString = useMemo(() => {
-        return getLastViewedString(participantsLastViewed, currentUserId, createdAt);
+        return getSeenByString(participantsLastViewed, currentUserId, createdAt);
     }, [ participantsLastViewed, currentUserId, createdAt ]);
 
     return seenByString ? (

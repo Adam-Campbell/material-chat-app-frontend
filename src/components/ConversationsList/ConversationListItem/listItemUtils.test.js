@@ -1,7 +1,7 @@
 import { 
     getOtherParticipants, 
-    getPrimaryText, 
-    getSecondaryText,
+    getParticipantsNamesString, 
+    getRemainingParticipantsString,
     getHasUnreadMessages 
 } from './listItemUtils';
 
@@ -53,10 +53,10 @@ describe('getOtherParticipants', () => {
     });
 });
 
-describe('getPrimaryText', () => {
+describe('getParticipantsNamesString', () => {
     it('returns a string composed of the usernames of, at most, the first two users', () => {
-        expect(getPrimaryText([ user2.username ])).toEqual('jane doe');
-        expect(getPrimaryText([ 
+        expect(getParticipantsNamesString([ user2.username ])).toEqual('jane doe');
+        expect(getParticipantsNamesString([ 
             user2.username, 
             user3.username, 
             user4.username 
@@ -64,15 +64,15 @@ describe('getPrimaryText', () => {
     });
 });
 
-describe('getSecondaryText', () => {
+describe('getRemainingParticipantsString', () => {
     it('returns null if there are no remaining users not accounted for in the primary text', () => {
-        expect(getSecondaryText([ 
+        expect(getRemainingParticipantsString([ 
             user2.username, 
             user3.username 
         ])).toBe(null);
     });
     it('returns a string indicating the number of unaccounted for users if there are any', () => {
-        expect(getSecondaryText([ 
+        expect(getRemainingParticipantsString([ 
             user2.username, 
             user3.username, 
             user4.username 

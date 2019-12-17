@@ -5,7 +5,6 @@ import Container from '@material-ui/core/Container';
 const useStyles = makeStyles(theme => ({
     container: {
         marginTop: 56,
-        //border: 'solid red 1px',
         minHeight: 'calc(100vh - 56px)',
         display: 'flex',
         flexDirection: 'column',
