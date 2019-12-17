@@ -14,7 +14,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const UserSearch = ({ value, setValue }) => {
+const UserSearch = ({ value, setValue, hasError, errorText }) => {
 
     const { styledInput } = useStyles();
 
@@ -42,8 +42,6 @@ const UserSearch = ({ value, setValue }) => {
         return off;
     }, [ on ]);
 
-    
-
     return (
         <Autocomplete
             className={styledInput} 
@@ -63,14 +61,25 @@ const UserSearch = ({ value, setValue }) => {
                 return options.filter(option => !(value.find(el => el._id === option._id)));
             }}
             loading={isLoading}
-            renderInput={params => <TextField {...params} label="Select user" variant="outlined" fullWidth />}
+            renderInput={params => (
+                <TextField 
+                    {...params} 
+                    label="Select user" 
+                    variant="outlined" 
+                    fullWidth
+                    error={hasError}
+                    helperText={errorText} 
+                />
+            )}
         />
     );
 }
 
 UserSearch.propTypes = {
     value: PropTypes.arrayOf(PropTypes.object).isRequired,
-    setValue: PropTypes.func.isRequired
+    setValue: PropTypes.func.isRequired,
+    hasError: PropTypes.bool.isRequired,
+    errorText: PropTypes.string
 };
 
 export default UserSearch;

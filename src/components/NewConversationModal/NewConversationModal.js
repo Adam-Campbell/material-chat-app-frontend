@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
@@ -10,6 +10,8 @@ import UserSearch from './UserSearch';
 import { useHistory } from 'react-router-dom';
 import { SocketContext } from '../SocketContext';
 import socketActions from '../../socketActions';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const useStyles = makeStyles(theme => ({
     modalPaper: {
@@ -50,29 +52,32 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
 
     const history = useHistory();
 
-    const [ userSearchValue, setUserSearchValue ] = useState([]);
-    const [ messageValue, setMessageValue ] = useState('');
-    const [ error, setError ] = useState(null);
     const { emit, on } = useContext(SocketContext);
 
-    const closeAndReset = () => {
-        setUserSearchValue([]);
-        setMessageValue('');
-        closeModal();
-    }
+    const fk = useFormik({
+        initialValues: {
+            users: [],
+            message: ''
+        },
+        validationSchema: Yup.object({
+            users: Yup.array().required('You must select at least one user'),
+            message: Yup.string().required('Message required')
+        }),
+        onSubmit: async (values, actions) => {
+            const { users, message } = values;
+            try {
+                const userIds = users.map(user => user._id);
+                emit(socketActions.sendConversation, { userIds, messageText: message });
+                closeAndReset();
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!userSearchValue.length || !messageValue) {
-            return setError('You must fill out all of the required fields');
-        }
-        try {
-            const userIds = userSearchValue.map(user => user._id);
-            emit(socketActions.sendConversation, { userIds, messageText: messageValue });
-            closeAndReset();
-        } catch (err) {
-            console.log(err);
-        }
+    const closeAndReset = () => {
+        fk.handleReset();
+        closeModal();
     }
 
     // Set up subscription to react to the sendConversation success message by
@@ -88,23 +93,49 @@ const NewConversationModal = ({ isShowingModal, closeModal }) => {
     return (
         <Modal open={isShowingModal} onClose={closeAndReset}>
             <Paper className={modalPaper}>
-                {error && <p>{error}</p>}
-                <Typography className={formHeading} component="h2" variant="h5">New conversation</Typography>
-                <form data-testid="new-conversation-form" onSubmit={handleSubmit} className={styledForm}>
+                <Typography 
+                    className={formHeading} 
+                    component="h2" 
+                    variant="h5"
+                >New conversation</Typography>
+                <form onSubmit={fk.handleSubmit} data-testid="new-conversation-form" className={styledForm}>
                     <UserSearch 
-                        value={userSearchValue}
-                        setValue={setUserSearchValue}
+                        value={fk.values.users || fk.initialValues.users}
+                        setValue={val => {
+                            fk.setFieldTouched('users');
+                            fk.setFieldValue('users', val);
+                        }}
+                        hasError={Boolean(fk.touched.users && fk.errors.users)}
+                        errorText={(fk.touched.users && fk.errors.users) ? fk.errors.users : null}
                     />
                     <TextField
                         className={styledInput}
                         type="text"
                         label="Write a message"
                         variant="outlined"
-                        value={messageValue}
-                        onChange={e => setMessageValue(e.target.value)}
+                        name="message"
+                        value={fk.values.message}
+                        onChange={e => {
+                            fk.setFieldTouched('message');
+                            fk.handleChange(e);
+                        }}
+                        onBlur={fk.handleBlur}
+                        error={Boolean(fk.touched.message && fk.errors.message)}
+                        helperText={(fk.touched.message && fk.errors.message) ? fk.errors.message : null}
                     />
-                    <Button className={submitButton} variant="contained" color="primary" type="submit">Send</Button>
-                    <Button className={cancelButton} variant="contained" color="secondary" onClick={closeAndReset}>Cancel</Button>
+                    <Button 
+                        className={submitButton} 
+                        variant="contained" 
+                        color="primary" 
+                        type="submit"
+                        disabled={!fk.isValid || !fk.dirty || fk.isSubmitting}
+                    >Send</Button>
+                    <Button 
+                        className={cancelButton} 
+                        variant="contained" 
+                        color="secondary" 
+                        onClick={closeAndReset}
+                    >Cancel</Button>
                 </form>
             </Paper>
         </Modal>
