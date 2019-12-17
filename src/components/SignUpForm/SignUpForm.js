@@ -146,6 +146,7 @@ const SignUpForm = () => {
                         )}
                     </Field>
                     <Button 
+                        data-testid="submit-button"
                         className={submitButton} 
                         variant="contained" 
                         color="primary" 
