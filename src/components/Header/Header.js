@@ -1,10 +1,10 @@
 import React, { useContext, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
-import ToolBar from '@material-ui/core/ToolBar';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import CreateIcon from '@material-ui/icons/Create';
+import Toolbar from '@material-ui/core/Toolbar';
 import { CurrentUserContext } from '../CurrentUserContext';
 import { SocketContext } from '../SocketContext';
 import NewConversationModal from '../NewConversationModal';
@@ -37,7 +37,7 @@ const Header = () => {
 
     return (
         <AppBar>
-            <ToolBar>
+            <Toolbar>
                 {isSignedIn ? (
                     <>
                         <BackToConversations />
@@ -76,7 +76,7 @@ const Header = () => {
                         >Sign Up</Button>
                     </>
                 )}
-            </ToolBar>
+            </Toolbar>
         </AppBar>
     );
 }
