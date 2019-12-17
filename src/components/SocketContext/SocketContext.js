@@ -13,7 +13,7 @@ export const SocketContextProvider = ({ children }) => {
     const connect = useCallback((token, cb) => {
         if (socketRef.current) return;
 
-        const socket = io.connect('http://localhost:5000');
+        const socket = io.connect(process.env.REACT_APP_ROOT_URL);
         socket.on('connect', () => {
             socket.emit('authenticate', { token })
             .on('authenticated', () => {

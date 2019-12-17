@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const a = axios.create({
-    baseURL: 'http://localhost:5000/',
+    baseURL: process.env.REACT_APP_ROOT_URL,
     withCredentials: true
 });
 
