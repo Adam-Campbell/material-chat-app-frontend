@@ -8,8 +8,8 @@ import { getInitials } from '../../../utils';
 import { CurrentUserContext } from '../../CurrentUserContext';
 import { 
     getOtherParticipants, 
-    getPrimaryText, 
-    getSecondaryText 
+    getParticipantsNamesString, 
+    getRemainingParticipantsString 
 } from './listItemUtils';
 
 const useStyles = makeStyles(theme => ({
@@ -32,12 +32,12 @@ const Participants = ({ participants }) => {
         return getInitials( otherParticipants[0] );
     }, [ otherParticipants ]);
 
-    const primaryText = useMemo(() => {
-        return getPrimaryText(otherParticipants);
+    const participantsNames = useMemo(() => {
+        return getParticipantsNamesString(otherParticipants);
     }, [ otherParticipants ]);
 
-    const secondaryText = useMemo(() => {
-        return getSecondaryText(otherParticipants);
+    const remainingParticipants = useMemo(() => {
+        return getRemainingParticipantsString(otherParticipants);
     }, [ otherParticipants ]);
 
     return (
@@ -47,8 +47,8 @@ const Participants = ({ participants }) => {
             </ListItemAvatar>
             <ListItemText 
                 className={participantsText}
-                primary={primaryText}
-                secondary={secondaryText}
+                primary={participantsNames}
+                secondary={remainingParticipants}
             />
         </>
     );

@@ -11,6 +11,12 @@ export const actionTypes = {
 
 export const optimisticMessagePlaceholderId = 'optimisticMessagePlaceholderId';
 
+export const initialState = {
+    isLoading: false,
+    conversation: null,
+    isShowingSnackbar: false
+};
+
 const updateLastViewed = (lastViewedArray, userId, timestamp) => {
     return lastViewedArray.map(lv => {
         return lv.user._id === userId ? ({
@@ -18,20 +24,14 @@ const updateLastViewed = (lastViewedArray, userId, timestamp) => {
             lastViewed: timestamp
         }) : lv
     });
-}
-
-export const initialState = {
-    isLoading: false,
-    conversation: null,
-    isShowingSnackbar: false
-}
+};
 
 const handleAddNewMessage = (messagesState, newMessage, isOwnMessage) => {
     const combined = [ ...messagesState, newMessage ];
     return isOwnMessage ? 
         combined.filter(msg => msg._id !== optimisticMessagePlaceholderId) :
         combined;
-}
+};
 
 export const reducer = (state, action) => {
     
@@ -116,4 +116,4 @@ export const reducer = (state, action) => {
         default:
             return state;
     }
-}
+};
